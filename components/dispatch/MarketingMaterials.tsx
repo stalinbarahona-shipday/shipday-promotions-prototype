@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Icon from "@/components/ui/Icon";
 
 /* ══════════════════════════════════════════════
@@ -57,10 +57,10 @@ function ToastStack({ toasts, remove }: { toasts: ToastData[]; remove: (id: numb
 
 function useToast() {
   const [toasts, setToasts] = useState<ToastData[]>([]);
-  let counter = 0;
+  const counterRef = useRef(0);
 
   const show = useCallback((message: string, icon = "check_circle") => {
-    const id = Date.now() + counter++;
+    const id = Date.now() + counterRef.current++;
     setToasts(prev => [...prev, { id, message, icon }]);
   }, []);
 
@@ -206,6 +206,12 @@ function FlyerEditorModal({
   const [exportSize,  setExportSize]  = useState("print");
   const [downloading, setDownloading] = useState(false);
 
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape" && !downloading) onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose, downloading]);
+
   const handleDownload = () => {
     if (downloading) return;
     setDownloading(true);
@@ -312,10 +318,8 @@ function FlyerEditorModal({
                   >
                     <div style={{
                       height: 44, borderRadius: 6, overflow: "hidden",
-                      border: sel ? "1.5px solid #01AD85" : "1.5px solid transparent",
-                      outline: sel ? "2px solid #01AD85" : "2px solid transparent",
-                      outlineOffset: 2,
-                      transition: "outline 150ms ease, border 150ms ease",
+                      boxShadow: sel ? "0 0 0 2px #01AD85" : "0 0 0 2px transparent",
+                      transition: "box-shadow 150ms ease",
                     }}>
                       <div style={{ height: "50%", background: t.dark }} />
                       <div style={{ height: "50%", background: t.light }} />
@@ -379,14 +383,33 @@ function FlyerEditorModal({
             backgroundImage: "radial-gradient(circle, #BFBFB8 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }} />
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <FlyerLivePreview
-              offer={offer}
-              description={description}
-              businessName={businessName}
-              themeId={colorTheme}
-              scanLabel={scanLabel}
-            />
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
+            <div style={{
+              width: 400,
+              height: exportSize === "social" ? 400 : undefined,
+              overflow: exportSize === "social" ? "hidden" : "visible",
+              borderRadius: 10,
+              position: "relative",
+              transition: "height 350ms ease",
+            }}>
+              <FlyerLivePreview
+                offer={offer}
+                description={description}
+                businessName={businessName}
+                themeId={colorTheme}
+                scanLabel={scanLabel}
+              />
+              {exportSize === "social" && (
+                <div style={{
+                  position: "absolute", inset: 0,
+                  border: "2px dashed rgba(1,173,133,0.5)",
+                  borderRadius: 10, pointerEvents: "none",
+                }} />
+              )}
+            </div>
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#737373" }}>
+              {exportSize === "print" ? "Letter / A4 format" : "1080 × 1080 px — Square crop"}
+            </span>
           </div>
         </div>
       </div>
@@ -460,8 +483,7 @@ function FlyerEditorModal({
 
 function DownloadSpinner() {
   return (
-    <svg width="20" height="20" viewBox="0 0 20 20" style={{ animation: "spin 800ms linear infinite" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <svg width="20" height="20" viewBox="0 0 20 20" className="animate-spin">
       <circle cx="10" cy="10" r="8" fill="none" stroke="#B0B0B0" strokeWidth="2" />
       <path d="M10 2 A8 8 0 0 1 18 10" fill="none" stroke="#737373" strokeWidth="2" strokeLinecap="round" />
     </svg>
@@ -474,12 +496,23 @@ function DownloadSpinner() {
 
 function MaterialCard({
   title, description, linkLabel, linkPlaceholder,
-  formatLabel, qrOptionLabel, imageOptionLabel,
+  formatLabel, qrOptionLabel, imageOptionLabel, onToast,
 }: {
   title: string; description: string; linkLabel: string; linkPlaceholder: string;
   formatLabel: string; qrOptionLabel: string; imageOptionLabel: string;
+  onToast: (msg: string, icon?: string) => void;
 }) {
   const [format, setFormat] = useState<"qr" | "image">("qr");
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = () => {
+    if (downloading) return;
+    setDownloading(true);
+    setTimeout(() => {
+      setDownloading(false);
+      onToast("Asset downloaded!", "download");
+    }, 1200);
+  };
 
   return (
     <div style={{ width: "100%", background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 16, overflow: "hidden" }}>
@@ -488,9 +521,22 @@ function MaterialCard({
           <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em", color: "#0A0A0A", lineHeight: "140%" }}>{title}</span>
           <span style={{ fontSize: 16, fontWeight: 350, color: "#404040", lineHeight: "150%" }}>{description}</span>
         </div>
-        <button style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", padding: "12px 20px 12px 16px", gap: 8, height: 48, background: "#008062", border: "none", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}>
-          <Icon name="download" size={24} color="#FFFFFF" />
-          <span style={{ fontSize: 16, fontWeight: 500, color: "#FFFFFF", lineHeight: "24px" }}>Download</span>
+        <button
+          onClick={handleDownload}
+          disabled={downloading}
+          style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", padding: "12px 20px 12px 16px", gap: 8, height: 48, background: downloading ? "#E8E8E4" : "#008062", border: "none", borderRadius: 8, cursor: downloading ? "default" : "pointer", flexShrink: 0, transition: "background 200ms ease", fontFamily: "inherit" }}
+        >
+          {downloading ? (
+            <>
+              <DownloadSpinner />
+              <span style={{ fontSize: 16, fontWeight: 500, color: "#737373", lineHeight: "24px" }}>Preparing…</span>
+            </>
+          ) : (
+            <>
+              <Icon name="download" size={24} color="#FFFFFF" />
+              <span style={{ fontSize: 16, fontWeight: 500, color: "#FFFFFF", lineHeight: "24px" }}>Download</span>
+            </>
+          )}
         </button>
       </div>
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", padding: 24, gap: 56 }}>
@@ -622,10 +668,11 @@ const flyerTemplates = [
 ];
 
 function FlyerCard({
-  template, onCreate,
+  template, onCreate, onToast,
 }: {
   template: typeof flyerTemplates[0];
   onCreate: () => void;
+  onToast: (msg: string, icon?: string) => void;
 }) {
   return (
     <div style={{ flex: 1, display: "flex", flexDirection: "column", background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 12, overflow: "hidden" }}>
@@ -645,7 +692,13 @@ function FlyerCard({
         >
           <span style={{ fontSize: 16, fontWeight: 500, color: "#FFFFFF", lineHeight: "24px" }}>Create</span>
         </button>
-        <button style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(`https://shipday.com/flyers/${template.id}`).catch(() => {});
+            onToast("Template link copied!", "link");
+          }}
+          style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", background: "#FFFFFF", border: "1px solid #E8E8E4", borderRadius: 8, cursor: "pointer", flexShrink: 0 }}
+        >
           <Icon name="share" size={20} color="#525252" />
         </button>
       </div>
@@ -665,7 +718,7 @@ function FlyersContent({ onToast }: { onToast: (msg: string, icon?: string) => v
         </div>
         <div style={{ display: "flex", flexDirection: "row", gap: 24 }}>
           {flyerTemplates.map(t => (
-            <FlyerCard key={t.id} template={t} onCreate={() => setEditorFlyer(t)} />
+            <FlyerCard key={t.id} template={t} onCreate={() => setEditorFlyer(t)} onToast={onToast} />
           ))}
         </div>
       </div>
@@ -739,6 +792,7 @@ export default function MarketingMaterials() {
               formatLabel="Format"
               qrOptionLabel="QR Code"
               imageOptionLabel="Image"
+              onToast={show}
             />
             <MaterialCard
               title="Collect SMS marketing subscribers"
@@ -748,6 +802,7 @@ export default function MarketingMaterials() {
               formatLabel="Format"
               qrOptionLabel="QR Code"
               imageOptionLabel="Image"
+              onToast={show}
             />
           </div>
         ) : (
