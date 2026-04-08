@@ -23,6 +23,7 @@ interface MenuItem {
   label: string;
   icon: LucideIcon;
   badge?: string;
+  path?: string;
 }
 
 interface SubItem {
@@ -51,11 +52,8 @@ const menuEntries: MenuEntry[] = [
       icon: Megaphone,
       children: [
         { label: "SMS Promotions", path: "promotions/sms", badge: "New" },
-        {
-          label: "Tracking Page Promotions",
-          path: "promotions/tracking",
-          badge: "New",
-        },
+        { label: "Tracking Page Promotions", path: "promotions/tracking", badge: "New" },
+        { label: "Marketing materials", path: "marketing", badge: "New" },
       ],
     },
   },
@@ -96,8 +94,8 @@ export default function SettingsSidebar({
 }: SettingsSidebarProps) {
   return (
     <aside
-      className="flex flex-col shrink-0 bg-white border-r border-border-default py-6 overflow-y-auto"
-      style={{ width: 332 }}
+      className="flex flex-col shrink-0 bg-white border-r border-border-default py-6 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+      style={{ width: 332, scrollbarWidth: "none" }}
     >
       <div className="px-6">
         <h2
@@ -111,7 +109,7 @@ export default function SettingsSidebar({
       <div className="flex flex-col px-4 mt-5">
         {menuEntries.map((entry, i) => {
           if (entry.type === "item") {
-            return <FlatItem key={i} item={entry.item} />;
+            return <FlatItem key={i} item={entry.item} activePage={activePage} />;
           }
           return (
             <ExpandableGroup
@@ -129,25 +127,28 @@ export default function SettingsSidebar({
 
 /* ── Flat menu item ── */
 
-function FlatItem({ item }: { item: MenuItem }) {
+function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string }) {
   const Icon = item.icon;
+  const isActive = !!item.path && item.path === activePage;
   return (
     <div
       className="flex flex-row items-center gap-2 rounded-[10px]"
       style={{
         padding: "12px 16px",
         width: 300,
+        background: isActive ? "#DBFBE5" : "transparent",
+        cursor: item.path ? "pointer" : "default",
       }}
     >
       <div
         className="flex items-center justify-center"
         style={{ width: 20, height: 20 }}
       >
-        <Icon size={15} color="#4A4A4A" />
+        <Icon size={15} color={isActive ? "#03624C" : "#4A4A4A"} />
       </div>
       <span
-        className="flex-1 leading-[21px] text-neutral-800 font-normal"
-        style={{ fontSize: 15 }}
+        className="flex-1 leading-[21px]"
+        style={{ fontSize: 15, fontWeight: isActive ? 700 : 400, color: isActive ? "#0A0A0A" : "#262626" }}
       >
         {item.label}
       </span>
