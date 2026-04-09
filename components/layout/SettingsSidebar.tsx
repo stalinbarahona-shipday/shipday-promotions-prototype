@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useTheme } from "@/components/ThemeContext";
 
 /* ── Types ── */
 
@@ -92,15 +93,16 @@ export default function SettingsSidebar({
   activePage = "dispatch",
   onPageChange,
 }: SettingsSidebarProps) {
+  const t = useTheme();
   return (
     <aside
-      className="flex flex-col shrink-0 bg-white border-r border-border-default py-6 overflow-y-auto [&::-webkit-scrollbar]:hidden"
-      style={{ width: 332, scrollbarWidth: "none" }}
+      className="flex flex-col shrink-0 py-6 overflow-y-auto [&::-webkit-scrollbar]:hidden"
+      style={{ width: 332, scrollbarWidth: "none", background: t.bg, borderRight: `1px solid ${t.border}`, transition: "background 300ms ease, border 300ms ease" }}
     >
       <div className="px-6">
         <h2
-          className="font-[800] text-neutral-900 leading-7"
-          style={{ fontSize: 20 }}
+          className="font-[800] leading-7"
+          style={{ fontSize: 20, color: t.text }}
         >
           Settings
         </h2>
@@ -128,15 +130,19 @@ export default function SettingsSidebar({
 /* ── Flat menu item ── */
 
 function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string }) {
+  const t = useTheme();
   const Icon = item.icon;
   const isActive = !!item.path && item.path === activePage;
+  const activeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
+  const badgeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
+  const badgeColor = t.mode === "dark" ? "#4ADE80" : "#03624C";
   return (
     <div
       className="flex flex-row items-center gap-2 rounded-[10px]"
       style={{
         padding: "12px 16px",
         width: 300,
-        background: isActive ? "#DBFBE5" : "transparent",
+        background: isActive ? activeBg : "transparent",
         cursor: item.path ? "pointer" : "default",
       }}
     >
@@ -144,11 +150,11 @@ function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string })
         className="flex items-center justify-center"
         style={{ width: 20, height: 20 }}
       >
-        <Icon size={15} color={isActive ? "#03624C" : "#4A4A4A"} />
+        <Icon size={15} color={isActive ? t.accentText : t.textMuted} />
       </div>
       <span
         className="flex-1 leading-[21px]"
-        style={{ fontSize: 15, fontWeight: isActive ? 700 : 400, color: isActive ? "#0A0A0A" : "#262626" }}
+        style={{ fontSize: 15, fontWeight: isActive ? 700 : 400, color: isActive ? t.text : t.textSecondary }}
       >
         {item.label}
       </span>
@@ -159,8 +165,8 @@ function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string })
             padding: "1px 6px",
             fontSize: 11,
             lineHeight: "16px",
-            background: "#DBFBE5",
-            color: "#03624C",
+            background: badgeBg,
+            color: badgeColor,
           }}
         >
           {item.badge}
@@ -181,10 +187,14 @@ function ExpandableGroup({
   activePage: string;
   onPageChange?: (page: string) => void;
 }) {
+  const t = useTheme();
   const hasActiveChild = group.children.some((c) => c.path === activePage);
   const [expanded, setExpanded] = useState(hasActiveChild);
+  const activeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
+  const hoverBg = t.mode === "dark" ? t.surfaceHover : "#F8F8F5";
+  const badgeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
+  const badgeColor = t.mode === "dark" ? "#4ADE80" : "#03624C";
 
-  // Auto-expand when a child becomes active (e.g. navigating from another variant)
   useEffect(() => {
     if (hasActiveChild) setExpanded(true);
   }, [hasActiveChild]);
@@ -192,10 +202,7 @@ function ExpandableGroup({
   const Icon = group.icon;
 
   return (
-    <div
-      className="flex flex-col"
-    >
-      {/* Group header — always visible, part of the card */}
+    <div className="flex flex-col">
       <div
         className="flex flex-row items-center gap-2 cursor-pointer"
         style={{
@@ -208,19 +215,19 @@ function ExpandableGroup({
           className="flex items-center justify-center"
           style={{ width: 20, height: 20 }}
         >
-          <Icon size={15} color="#4A4A4A" />
+          <Icon size={15} color={t.textMuted} />
         </div>
         <span
           className={`flex-1 leading-[21px] ${
             hasActiveChild || expanded ? "font-medium" : "font-normal"
           }`}
-          style={{ fontSize: 15, color: "#242424" }}
+          style={{ fontSize: 15, color: t.textSecondary }}
         >
           {group.label}
         </span>
         <ChevronDown
           size={16}
-          color="#737373"
+          color={t.textMuted}
           style={{
             transition: "transform 150ms ease",
             transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
@@ -228,7 +235,6 @@ function ExpandableGroup({
         />
       </div>
 
-      {/* Sub-items — inside the same card surface */}
       {expanded && (
         <div style={{ padding: "0 6px 6px" }}>
           {group.children.map((child) => {
@@ -240,11 +246,11 @@ function ExpandableGroup({
                 style={{
                   padding: "10px 16px 10px 40px",
                   borderRadius: 8,
-                  background: isActive ? "#DBFBE5" : "transparent",
+                  background: isActive ? activeBg : "transparent",
                   transition: "background 150ms ease",
                 }}
                 onMouseEnter={(e) => {
-                  if (!isActive) e.currentTarget.style.background = "#F8F8F5";
+                  if (!isActive) e.currentTarget.style.background = hoverBg;
                 }}
                 onMouseLeave={(e) => {
                   if (!isActive) e.currentTarget.style.background = "transparent";
@@ -258,7 +264,7 @@ function ExpandableGroup({
                   style={{
                     fontSize: 14,
                     lineHeight: "20px",
-                    color: isActive ? "#0A0A0A" : "#525252",
+                    color: isActive ? t.text : t.textSecondary,
                   }}
                 >
                   {child.label}
@@ -270,8 +276,8 @@ function ExpandableGroup({
                       padding: "1px 6px",
                       fontSize: 11,
                       lineHeight: "16px",
-                      background: "#DBFBE5",
-                      color: "#03624C",
+                      background: badgeBg,
+                      color: badgeColor,
                     }}
                   >
                     {child.badge}
