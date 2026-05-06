@@ -52,8 +52,8 @@ const menuEntries: MenuEntry[] = [
       label: "Promotions",
       icon: Megaphone,
       children: [
-        { label: "SMS Promotions", path: "promotions/sms", badge: "New" },
-        { label: "Tracking Page Promotions", path: "promotions/tracking", badge: "New" },
+        { label: "SMS Promotions", path: "promotions/sms" },
+        { label: "Tracking Page Promotions", path: "promotions/tracking" },
         { label: "Marketing materials", path: "marketing", badge: "New" },
       ],
     },
