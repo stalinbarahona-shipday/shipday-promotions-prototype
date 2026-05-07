@@ -104,7 +104,7 @@ const PRESET_FOOD_PHOTOS = [
   { id: "pasta",   label: "Pasta",   url: "https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=566&fit=crop&q=80" },
 ];
 
-type FieldDef = { id: string; label: string; placeholder: string; multiline?: boolean };
+type FieldDef = { id: string; label: string; placeholder: string; multiline?: boolean; maxLength?: number };
 
 type AccountData = {
   businessName: string;
@@ -123,10 +123,11 @@ function themeBackground(theme: typeof colorThemes[0]) {
 const EDITOR_FONT = "'Avenir', 'AvenirWeb', 'Nunito Sans', sans-serif";
 
 function EditorField({
-  label, placeholder, value, onChange, multiline = false, hint,
-}: { label: string; placeholder: string; value: string; onChange: (v: string) => void; multiline?: boolean; hint?: string }) {
+  label, placeholder, value, onChange, multiline = false, hint, maxLength,
+}: { label: string; placeholder: string; value: string; onChange: (v: string) => void; multiline?: boolean; hint?: string; maxLength?: number }) {
   const t = useTheme();
   const [focused, setFocused] = useState(false);
+  const remaining = maxLength !== undefined ? maxLength - value.length : undefined;
   const base: React.CSSProperties = {
     width: "100%",
     padding: multiline ? 14 : "0 16px",
@@ -143,14 +144,17 @@ function EditorField({
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
         <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 500, color: t.text }}>{label}</span>
-        {hint && <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, color: t.textMuted }}>{hint}</span>}
+        {remaining !== undefined
+          ? <span style={{ fontFamily: EDITOR_FONT, fontSize: 13, color: remaining <= 8 ? "#EF4444" : t.textMuted }}>{remaining} left</span>
+          : hint && <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, color: t.textMuted }}>{hint}</span>
+        }
       </div>
       {multiline
         ? <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3}
-            spellCheck={false} autoComplete="off"
+            spellCheck={false} autoComplete="off" maxLength={maxLength}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={{ ...base, resize: "none" }} />
         : <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-            spellCheck={false} autoComplete="off"
+            spellCheck={false} autoComplete="off" maxLength={maxLength}
             onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={{ ...base, height: 44 }} />
       }
     </div>
@@ -376,12 +380,11 @@ const templateFields: Record<string, FieldDef[]> = {
     { id: "bodyCopy",     label: "Offer description", placeholder: "e.g. Apps charge 30% extra. Order direct and pay our real menu prices.", multiline: true },
   ],
   discount: [
-    { id: "businessName",    label: "Business name",   placeholder: "e.g. La Familia Katonah" },
-    { id: "tagline",         label: "Tagline",          placeholder: "e.g. Pizza & Italian · 278 Katonah Ave, NY" },
-    { id: "discountPercent", label: "Discount %",       placeholder: "e.g. 15" },
-    { id: "offer",           label: "Offer title",       placeholder: "e.g. Off your next direct order" },
-    { id: "details",         label: "Offer description", placeholder: "e.g. No code needed — discount auto-applies when you scan", multiline: true },
-    { id: "orderUrl",        label: "QR code link",     placeholder: "e.g. order.yourstore.com" },
+    { id: "businessName", label: "Business name",      placeholder: "e.g. La Familia Katonah" },
+    { id: "headline",     label: "Title",              placeholder: "e.g. 15% Off your next order", maxLength: 50 },
+    { id: "details",      label: "Promo code",         placeholder: "e.g. SHIPDAY15" },
+    { id: "termsText",    label: "Terms & expiration", placeholder: "e.g. T&Cs apply · Valid until Dec 31, 2024" },
+    { id: "orderUrl",     label: "QR code link",       placeholder: "e.g. order.yourstore.com" },
   ],
   freeItem: [
     { id: "businessName",  label: "Business name",     placeholder: "e.g. La Familia Katonah" },
@@ -480,6 +483,8 @@ const MENU_PRICES_THEMES: Record<string, { bg: string; textPrimary: string; text
   rose:    { bg: "#FFF1F2", textPrimary: "#0A0A0A", textBody: "#262626",                 taglineBg: "#FFE4E6", dividerColor: "#FECDD3", photoBg: "linear-gradient(180deg, #FFD6DB 0%, #FECDD3 100%)", dark: false },
   teal:    { bg: "#F0FDFA", textPrimary: "#0A0A0A", textBody: "#262626",                 taglineBg: "#CCFBF1", dividerColor: "#99F6E4", photoBg: "linear-gradient(180deg, #B2F5EA 0%, #81E6D9 100%)", dark: false },
   orange:  { bg: "#FFF7ED", textPrimary: "#0A0A0A", textBody: "#262626",                 taglineBg: "#FED7AA", dividerColor: "#FDBA74", photoBg: "linear-gradient(180deg, #FED7AA 0%, #FB923C 100%)", dark: false },
+  red:     { bg: "#FEF2F2", textPrimary: "#0A0A0A", textBody: "#262626",                 taglineBg: "#FEE2E2", dividerColor: "#FECACA", photoBg: "linear-gradient(180deg, #FECACA 0%, #F87171 100%)", dark: false },
+  yellow:  { bg: "#FEFCE8", textPrimary: "#0A0A0A", textBody: "#262626",                 taglineBg: "#FEF08A", dividerColor: "#FDE047", photoBg: "linear-gradient(180deg, #FDE047 0%, #EAB308 100%)", dark: false },
 };
 
 function MenuPricesLivePreview({ fields, themeId, logo, photo, onFieldChange, onPhotoClick, onLogoClick }: PreviewProps) {
@@ -575,52 +580,116 @@ function MenuPricesLivePreview({ fields, themeId, logo, photo, onFieldChange, on
   );
 }
 
-function DiscountLivePreview({ fields, themeId, logo }: PreviewProps) {
-  const tc  = MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint;
-  const name = fields.businessName?.trim() || "Your Business";
-  const pct  = fields.discountPercent?.trim() || "15";
-  const url  = fields.orderUrl?.trim() || "yourbusiness.com/order";
-  const isDark = tc.dark;
-  const pillBg = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.06)";
-  const pillColor = tc.textPrimary;
-  const qrBg = isDark ? "rgba(255,255,255,0.95)" : "#FFFFFF";
+const DISCOUNT_PILL_BG: Record<string, string> = {
+  purple:  "#A78BFA",
+  red:     "#F87171",
+  orange:  "#FB923C",
+  yellow:  "#FACC15",
+  navy:    "#22D3EE",
+  slate:   "#60A5FA",
+  shipday: "#34D399",
+  rose:    "#F472B6",
+  mint:    "#6AEBBE",
+  teal:    "#2DD4BF",
+};
+
+function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
+  const FLYER_H   = 517;
+  const HEADER_H  = 264;
+  const PICTURE_H = 253;
+
+  const tc       = MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint;
+  const pillBg   = DISCOUNT_PILL_BG[themeId]   ?? "#6AEBBE";
+  const pillText = tc.dark ? "#FFFFFF" : "#0A0A0A";
+
+  const name      = fields.businessName?.trim() || "";
+  const headline  = fields.headline?.trim()     || "15% Off your next order";
+  const promoCode = fields.details?.trim()      || "";
+  const terms     = fields.termsText?.trim()    || "";
+  const url       = fields.orderUrl?.trim()     || "yourbusiness.com/order";
+
   return (
-    <div style={{ width: 400, height: 566, background: tc.bg, display: "flex", flexDirection: "column", alignItems: "center", overflow: "hidden", position: "relative" }}>
+    <div style={{ width: 400, height: FLYER_H, background: tc.bg, position: "relative", overflow: "hidden" }}>
 
-      {/* Logo + name — top center */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 28, flexShrink: 0 }}>
-        <LogoOrAvatar logo={logo} size={28} />
-        <span style={{ fontSize: 15, fontWeight: 600, color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif", letterSpacing: "-0.01em" }}>{name}</span>
-      </div>
+      {/* Header */}
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "32px 24px", gap: 20,
+        width: 400, height: HEADER_H, boxSizing: "border-box",
+      }}>
+        {/* Logo container */}
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: "11px 16px", gap: 10, borderRadius: 8 }}>
+          <div style={{ width: 18, height: 18, position: "relative", flexShrink: 0 }}>
+            <div style={{ position: "absolute", width: 12.75, height: 12.75, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
+            <div style={{ position: "absolute", width: 12.75, height: 12.75, left: 5.27, top: 5.23, background: "#ABE571", borderRadius: "50%" }} />
+            <div style={{ position: "absolute", width: 7.71, height: 7.71, left: 5.14, top: 5.12, background: "#008062", borderRadius: "50%" }} />
+          </div>
+          {name && (
+            <span style={{ fontSize: 11.76, fontWeight: 600, color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif" }}>{name}</span>
+          )}
+        </div>
 
-      <div style={{ flex: 1, minHeight: 20 }} />
+        {/* Main content */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24, width: 352 }}>
+          <div style={{ width: "100%", overflow: "hidden", maxHeight: 62 }}>
+            <span style={{
+              display: "block",
+              fontSize: 28, fontWeight: 700, lineHeight: "110%",
+              textAlign: "center", letterSpacing: "-0.02em",
+              color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif",
+              wordBreak: "break-word",
+            }}>
+              {headline}
+            </span>
+          </div>
 
-      {/* HERO — massive percentage, billboard style */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-        <span style={{ fontSize: 150, fontWeight: 900, color: tc.textPrimary, letterSpacing: "-0.06em", lineHeight: 0.85, fontFamily: "Inter, system-ui, sans-serif" }}>{pct}%</span>
-        <span style={{ fontSize: 22, fontWeight: 800, color: tc.textPrimary, letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 4, fontFamily: "Inter, system-ui, sans-serif" }}>Off</span>
-      </div>
-
-      {/* Offer text */}
-      <div style={{ marginTop: 20, textAlign: "center", flexShrink: 0, padding: "0 40px", display: "flex", flexDirection: "column", gap: 8 }}>
-        <span style={{ fontSize: 17, fontWeight: 500, color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif" }}>
-          {fields.offer?.trim() || "Your next direct order"}
-        </span>
-        <div style={{ background: pillBg, borderRadius: 99, padding: "6px 16px", alignSelf: "center" }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: pillColor, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.7 }}>
-            {fields.details?.trim() || "No code needed — auto-applies on scan"}
-          </span>
+          {/* Promo code pill + terms */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center", maxWidth: 300 }}>
+            {promoCode && (
+              <div style={{
+                display: "inline-flex", flexDirection: "row", alignItems: "center",
+                padding: "0 14px", gap: 6, background: pillBg, borderRadius: 6, height: 32,
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
+                  Promo code
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
+                  {promoCode}
+                </span>
+              </div>
+            )}
+            {terms && (
+              <span style={{
+                fontSize: 11, fontWeight: 400, color: tc.textBody,
+                fontFamily: "Inter, system-ui, sans-serif", lineHeight: "150%",
+                textAlign: "center",
+              }}>{terms}</span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div style={{ flex: 1, minHeight: 20 }} />
+      {/* Picture section */}
+      <div style={{
+        position: "absolute", width: 400, height: PICTURE_H,
+        left: 0, bottom: 0, background: "#898989", overflow: "hidden",
+      }}>
+        {photo && <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
 
-      {/* QR + URL — bottom */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, marginBottom: 24, flexShrink: 0 }}>
-        <div style={{ background: qrBg, borderRadius: 10, padding: 8 }}>
-          <QRCodeSVG value={toQrUrl(url)} size={80} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+        {/* QR Code container */}
+        <div style={{
+          position: "absolute", right: 16, bottom: 16,
+          width: 108, height: 123, background: "#FFFFFF", borderRadius: 6,
+          display: "flex", flexDirection: "column", alignItems: "center",
+          padding: 6, gap: 1, boxSizing: "border-box",
+        }}>
+          <span style={{
+            fontSize: 10, fontWeight: 500, color: "#262626",
+            textAlign: "center", width: 96, fontFamily: "Inter, system-ui, sans-serif",
+            lineHeight: "140%",
+          }}>Scan to order direct</span>
+          <QRCodeSVG value={toQrUrl(url)} size={96} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
         </div>
-        <span style={{ fontSize: 13, fontWeight: 400, color: tc.textBody, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.6 }}>{url}</span>
       </div>
     </div>
   );
@@ -693,7 +762,7 @@ function EditorPreview({ templateId, fields, themeId, logo, photo, onFieldChange
    FLYER EDITOR MODAL
 ══════════════════════════════════════════════ */
 
-type FlyerTemplate = { id: string; label: string; description: string; badge?: string; preview: React.ReactNode; previewBg: string; previewOffsetY?: number; colorVariants?: string[]; defaultTheme?: string };
+type FlyerTemplate = { id: string; label: string; description: string; badge?: string; preview: React.ReactNode; previewBg: string; previewOffsetY?: number; colorVariants?: string[]; defaultTheme?: string; flyerHeight?: number; templateDefaults?: Record<string, string> };
 
 type SavedFlyer = {
   id: number;
@@ -718,6 +787,7 @@ function FlyerEditorModal({
   initialExportSize?: string;
 }) {
   const t = useTheme();
+  const flyerH = template.flyerHeight ?? 566;
   const fieldDefs       = templateFields[template.id] ?? templateFields.menuPrices;
   const availableThemes = template.colorVariants
     ? colorThemes.filter(ct => template.colorVariants!.includes(ct.id))
@@ -725,7 +795,7 @@ function FlyerEditorModal({
   const isMenuPrices = template.id === "menuPrices";
   const bizFields   = fieldDefs.filter(f => BIZ_FIELD_IDS.has(f.id));
   const offerFields = fieldDefs.filter(f => !BIZ_FIELD_IDS.has(f.id));
-  const [fields,             setFields]            = useState<Record<string, string>>(initialFields ?? {});
+  const [fields,             setFields]            = useState<Record<string, string>>({ ...(template.templateDefaults ?? {}), ...(initialFields ?? {}) });
   const [colorTheme,         setColorTheme]        = useState(initialTheme ?? template.defaultTheme ?? "shipday");
   const [exportSize, setExportSize] = useState(initialExportSize ?? "print");
   const [downloading,        setDownloading]       = useState(false);
@@ -743,7 +813,7 @@ function FlyerEditorModal({
     if (!el) return;
     const compute = () => {
       const { width, height } = el.getBoundingClientRect();
-      setPreviewScale(Math.min((width - 64) / 400, (height - 64) / 566, 1.4));
+      setPreviewScale(Math.min((width - 64) / 400, (height - 64) / flyerH, 1.4));
     };
     compute();
     const obs = new ResizeObserver(compute);
@@ -772,8 +842,8 @@ function FlyerEditorModal({
     try {
       const dataUrl = await toPng(flyerRef.current, {
         width: 400,
-        height: 566,
-        pixelRatio: 3, // high-res for print (1200×1698)
+        height: flyerH,
+        pixelRatio: 3,
         cacheBust: true,
       });
       const link = document.createElement("a");
@@ -933,8 +1003,8 @@ function FlyerEditorModal({
             })}
           </div>
 
-          <div style={{ width: 400, height: 566, transform: `scale(${previewScale})`, transformOrigin: "center center", flexShrink: 0, position: "relative" }}>
-            <div ref={flyerRef} style={{ width: 400, height: 566, overflow: "hidden", borderRadius: 10, position: "relative", boxShadow: "0 8px 48px rgba(0,0,0,0.16)" }}>
+          <div style={{ width: 400, height: flyerH, transform: `scale(${previewScale})`, transformOrigin: "center center", flexShrink: 0, position: "relative" }}>
+            <div ref={flyerRef} style={{ width: 400, height: flyerH, overflow: "hidden", borderRadius: 10, position: "relative", boxShadow: "0 8px 48px rgba(0,0,0,0.16)" }}>
               <EditorPreview
                 templateId={template.id}
                 fields={fields}
@@ -1034,15 +1104,35 @@ function MenuPricesFlyerPreview({ account }: { account: AccountData }) {
 }
 
 function DiscountFlyerPreview({ account }: { account: AccountData }) {
-  // Thumbnail: full-bleed mint, massive percentage — billboard style
-  const bg = "#EEFCF3";
-  const textColor = "#0A0A0A";
+  const url = account.orderUrl || "yourbusiness.com/order";
   return (
-    <div style={{ width: 260, height: 368, background: bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-      <span style={{ fontSize: 9, fontWeight: 600, color: textColor, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.5, marginBottom: 4 }}>{account.businessName}</span>
-      <span style={{ fontSize: 100, fontWeight: 900, color: textColor, letterSpacing: "-0.06em", lineHeight: 0.85, fontFamily: "Inter, system-ui, sans-serif" }}>15%</span>
-      <span style={{ fontSize: 16, fontWeight: 800, color: textColor, letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 4, fontFamily: "Inter, system-ui, sans-serif" }}>Off</span>
-      <span style={{ fontSize: 9, fontWeight: 400, color: textColor, marginTop: 10, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.5 }}>Your next direct order</span>
+    <div style={{ width: 260, height: 336, background: "#EEFCF3", position: "relative", overflow: "hidden" }}>
+      {/* Header area (~171px = 260 × 264/400) */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "20px 16px", gap: 13, width: 260, height: 171, boxSizing: "border-box" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <div style={{ width: 12, height: 12, position: "relative", flexShrink: 0 }}>
+            <div style={{ position: "absolute", width: 8.5, height: 8.5, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
+            <div style={{ position: "absolute", width: 8.5, height: 8.5, left: 3.5, top: 3.5, background: "#ABE571", borderRadius: "50%" }} />
+            <div style={{ position: "absolute", width: 5.1, height: 5.1, left: 3.4, top: 3.4, background: "#008062", borderRadius: "50%" }} />
+          </div>
+          <span style={{ fontSize: 7.6, fontWeight: 600, color: "#000000", fontFamily: "Inter, system-ui, sans-serif" }}>{account.businessName}</span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16, width: 228 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, lineHeight: "110%", textAlign: "center", letterSpacing: "-0.02em", color: "#0A0A0A", fontFamily: "Inter, system-ui, sans-serif" }}>
+            15% Off<br />your next direct order
+          </span>
+          <div style={{ background: "#6AEBBE", borderRadius: 4, height: 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 8px" }}>
+            <span style={{ fontSize: 7.8, fontWeight: 400, color: "#0A0A0A", fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>No code needed</span>
+          </div>
+        </div>
+      </div>
+      {/* Photo area */}
+      <div style={{ position: "absolute", left: 0, bottom: 0, width: 260, height: 164, background: "#898989" }}>
+        <div style={{ position: "absolute", right: 10, bottom: 10, width: 70, height: 80, background: "#FFFFFF", borderRadius: 4, display: "flex", flexDirection: "column", alignItems: "center", padding: 4, boxSizing: "border-box", gap: 1 }}>
+          <span style={{ fontSize: 6.5, fontWeight: 500, color: "#262626", textAlign: "center", fontFamily: "Inter, system-ui, sans-serif" }}>Scan to order</span>
+          <QRCodeSVG value={toQrUrl(url)} size={57} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -1094,8 +1184,10 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       previewBg: "#FFFFFF",
       label: "% Off Discount",
       description: "Offer a percentage discount on their next direct order.",
-      colorVariants: ["mint", "shipday", "teal", "purple", "rose", "navy", "slate"],
+      colorVariants: ["purple", "red", "orange", "yellow", "navy", "slate", "shipday", "rose"],
       defaultTheme: "purple",
+      flyerHeight: 517,
+      templateDefaults: { headline: "15% Off your next order", details: "DIRECT15", termsText: "T&Cs apply · Valid until Dec 31, 2024" },
     },
     {
       id: "freeItem",
@@ -1134,7 +1226,7 @@ function FlyerPreviewModal({ template, account, onCreate, onClose }: { template:
           </button>
         </div>
         <div className="[&::-webkit-scrollbar]:hidden" style={{ padding: "40px 32px 48px", display: "flex", justifyContent: "center", overflowY: "auto", scrollbarWidth: "none" }}>
-          <EditorPreview templateId={template.id} fields={account as unknown as Record<string, string>} themeId="shipday" />
+          <EditorPreview templateId={template.id} fields={{ ...(template.templateDefaults ?? {}), ...(account as unknown as Record<string, string>) }} themeId={template.defaultTheme ?? "shipday"} />
         </div>
         <div style={{ padding: "0 32px 32px" }}>
           <button onClick={() => { onClose(); onCreate(); }} style={{ width: "100%", height: 52, background: t.accent, border: "none", borderRadius: 10, cursor: "pointer", fontSize: 16, fontWeight: 600, color: "#FFFFFF", fontFamily: "inherit" }}>
@@ -1159,7 +1251,7 @@ function FlyerCard({ template, account, onCreate, onToast }: { template: FlyerTe
       <div style={{ flex: 1, display: "flex", flexDirection: "column", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 12, overflow: "hidden", transition: "background 200ms ease, border 200ms ease", position: "relative" }}>
         <div style={{ height: 220, background: previewBg, borderBottom: `1px solid ${t.border}`, position: "relative", overflow: "hidden", display: "flex", alignItems: "flex-start", justifyContent: "center", transition: "background 200ms ease" }}>
           <div style={{ position: "absolute", top: 10, transform: "scale(0.48)", transformOrigin: "top center" }}>
-            <EditorPreview templateId={template.id} fields={account as unknown as Record<string, string>} themeId={template.defaultTheme ?? "mint"} photo={PRESET_FOOD_PHOTOS[0].url} />
+            <EditorPreview templateId={template.id} fields={{ ...(template.templateDefaults ?? {}), ...(account as unknown as Record<string, string>) }} themeId={template.defaultTheme ?? "mint"} photo={PRESET_FOOD_PHOTOS[0].url} />
           </div>
         </div>
         <div style={{ padding: "20px 24px 16px", display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
@@ -1429,12 +1521,13 @@ function MaterialCard({
 ══════════════════════════════════════════════ */
 
 const tabs = [
-  { id: "all",    label: "QR codes & templates" },
+  { id: "sms",    label: "SMS Subscribers" },
+  { id: "reviews", label: "Reviews" },
   { id: "flyers", label: "Boost direct ordering" },
 ];
 
 export default function MarketingMaterials({ account }: { account?: AccountData }) {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("sms");
   const { theme: t, toggle: toggleDark } = useThemeToggle();
   const { toasts, show, remove } = useToast();
 
@@ -1464,10 +1557,13 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
         </div>
 
         <div className="[&::-webkit-scrollbar]:hidden" style={{ flex: 1, overflowY: "auto", scrollbarWidth: "none" }}>
-          {activeTab === "all" ? (
+          {activeTab === "sms" ? (
+            <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
+              <MaterialCard title="Collect SMS marketing subscribers" description="Let customers opt in to SMS promotions by scanning a code or clicking a link" linkLabel="Opt-in link" linkPlaceholder="https://shipday.com/sms/subscribe/your-store" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} />
+            </div>
+          ) : activeTab === "reviews" ? (
             <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
               <MaterialCard title="Collect reviews by QR Code" description="Share a QR code or image that takes customers directly to your review page" linkLabel="Review page link" linkPlaceholder="https://g.page/r/your-business/review" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} />
-              <MaterialCard title="Collect SMS marketing subscribers" description="Let customers opt in to SMS promotions by scanning a code or clicking a link" linkLabel="Opt-in link" linkPlaceholder="https://shipday.com/sms/subscribe/your-store" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} />
             </div>
           ) : (
             <FlyersContent onToast={show} initialAccount={account} />
