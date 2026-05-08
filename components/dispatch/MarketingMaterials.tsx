@@ -987,7 +987,7 @@ function FlyerEditorModal({
                         style={{
                           width: 26, height: 26, borderRadius: 99,
                           background: usesBg ? ft.bg : ft.pill,
-                          border: ft.id === "classic" ? "1.5px solid #D1D5DB" : "none",
+                          border: ft.id === "classic" ? "1.5px solid #D1D5DB" : (ft.id === "stone" || ft.id === "charcoal") ? "1.5px solid rgba(255,255,255,0.3)" : "none",
                           cursor: "pointer", flexShrink: 0,
                           boxShadow: sel
                             ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}`
