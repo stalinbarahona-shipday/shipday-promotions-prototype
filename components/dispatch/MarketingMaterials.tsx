@@ -388,7 +388,7 @@ const templateFields: Record<string, FieldDef[]> = {
   ],
   freeItem: [
     { id: "businessName", label: "Business name",      placeholder: "e.g. La Familia Katonah" },
-    { id: "headline",     label: "Offer title",        placeholder: "e.g. Get free garlic knots on orders over $20", maxLength: 80 },
+    { id: "headline",     label: "Offer title",        placeholder: "e.g. Get free garlic knots on orders over $20", maxLength: 50 },
     { id: "details",      label: "Promo code",         placeholder: "e.g. OFF20" },
     { id: "termsText",    label: "Terms & expiration", placeholder: "e.g. T&Cs apply · Offer ends 30.05.26" },
     { id: "orderUrl",     label: "QR code link",       placeholder: "e.g. order.yourstore.com" },
@@ -764,7 +764,7 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
 
         {/* Left: headline + promo + terms */}
         <div style={{ width: 228, flexShrink: 0, display: "flex", flexDirection: "column", gap: 18 }}>
-          <span style={{ fontSize: 28, fontWeight: 700, color: tc.textPrimary, lineHeight: "100%", letterSpacing: "-0.02em", fontFamily: "Inter, system-ui, sans-serif", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: tc.textPrimary, lineHeight: "100%", letterSpacing: "-0.02em", fontFamily: "Inter, system-ui, sans-serif" }}>
             {headline}
           </span>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
