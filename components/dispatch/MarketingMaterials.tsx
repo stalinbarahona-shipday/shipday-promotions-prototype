@@ -812,8 +812,153 @@ type SavedFlyer = {
   createdAt: Date;
 };
 
+/* ── Google badge ─────────────────────────────────── */
+function GoogleBadge() {
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, borderRadius: "50%", background: "#4285F4", fontSize: 8.5, fontWeight: 700 as const, color: "#FFFFFF", fontFamily: "Inter, system-ui, sans-serif", flexShrink: 0, lineHeight: 1 }}>G</span>
+  );
+}
+
+/* ── Manual (not-connected) business card ─────────── */
+function ManualBizCard({ fields, logo, onFieldChange, onLogoClick }: { fields: Record<string, string>; logo: string | null; onFieldChange: (id: string, v: string) => void; onLogoClick: () => void }) {
+  const t = useTheme();
+  const [editing, setEditing] = useState(false);
+  const logoBadge = (
+    <div onClick={onLogoClick} title="Change logo" style={{ flexShrink: 0, cursor: "pointer", position: "relative" }}>
+      <LogoOrAvatar logo={logo} size={44} />
+      <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Icon name="photo_camera" size={11} color={t.textMuted} />
+      </div>
+    </div>
+  );
+  if (!editing) return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12 }}>
+      {logoBadge}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</div>
+        <div style={{ fontFamily: EDITOR_FONT, fontSize: 14, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.orderUrl || "your-order-url.com"}</div>
+      </div>
+      <button onClick={() => setEditing(true)} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, transition: "border-color 150ms ease" }} onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)} onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}>
+        <Icon name="edit" size={16} color={t.textMuted} /><span style={{ fontSize: 14, fontWeight: 500 as const, color: t.textMuted }}>Edit</span>
+      </button>
+    </div>
+  );
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 12 }}>
+      {logoBadge}
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+        {([{ id: "businessName", ph: "e.g. La Familia Katonah", w: 600 }, { id: "orderUrl", ph: "e.g. order.yourstore.com", w: 400 }] as const).map(f => (
+          <input key={f.id} value={fields[f.id] ?? ""} onChange={e => onFieldChange(f.id, e.target.value)} placeholder={f.ph}
+            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: f.w, color: t.text, outline: "none", boxSizing: "border-box" as const, transition: "border-color 150ms ease" }}
+            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
+        ))}
+      </div>
+      <button onClick={() => setEditing(false)} style={{ flexShrink: 0, padding: "6px 14px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
+    </div>
+  );
+}
+
+/* ── Business info card (all 3 states) ───────────── */
+function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, isConnected, accountData, onShowConnect }: {
+  fields: Record<string, string>;
+  logo: string | null;
+  onFieldChange: (id: string, v: string) => void;
+  onLogoClick: () => void;
+  isConnected: boolean;
+  accountData?: AccountData;
+  onShowConnect?: () => void;
+}) {
+  const t = useTheme();
+  const [expanded, setExpanded] = useState(false);
+
+  if (!isConnected) return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(37,99,235,0.07)", border: "1px solid rgba(37,99,235,0.18)", borderRadius: 10 }}>
+        <Icon name="link" size={15} color="#2563EB" />
+        <span style={{ flex: 1, fontFamily: EDITOR_FONT, fontSize: 13, color: t.text, lineHeight: "140%" }}>Connect Google Business Profile to auto-fill this info</span>
+        <button onClick={onShowConnect} style={{ flexShrink: 0, padding: "5px 12px", background: t.accent, border: "none", borderRadius: 7, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Connect</button>
+      </div>
+      <ManualBizCard fields={fields} logo={logo} onFieldChange={onFieldChange} onLogoClick={onLogoClick} />
+    </div>
+  );
+
+  if (!expanded) return (
+    <div onClick={() => setExpanded(true)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12, cursor: "pointer" }}
+      onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)} onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}>
+      <LogoOrAvatar logo={logo} size={36} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+          <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
+          <GoogleBadge />
+        </div>
+        <div style={{ fontFamily: EDITOR_FONT, fontSize: 12, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{fields.orderUrl || "your-order-url.com"}</div>
+      </div>
+      <Icon name="expand_more" size={20} color={t.textMuted} />
+    </div>
+  );
+
+  // Expanded
+  return (
+    <div style={{ background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 12, overflow: "hidden" }}>
+      <div onClick={() => setExpanded(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer" }}>
+        <LogoOrAvatar logo={logo} size={36} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
+            <GoogleBadge />
+          </div>
+        </div>
+        <Icon name="expand_less" size={20} color={t.textMuted} />
+      </div>
+      <div style={{ height: 1, background: t.border }} />
+      <div style={{ padding: 14 }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+          <div onClick={onLogoClick} style={{ cursor: "pointer", position: "relative", flexShrink: 0 }}>
+            <LogoOrAvatar logo={logo} size={44} />
+            <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Icon name="photo_camera" size={11} color={t.textMuted} />
+            </div>
+          </div>
+          <div>
+            <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.text, marginBottom: 2 }}>Logo</div>
+            <button onClick={onLogoClick} style={{ fontFamily: EDITOR_FONT, fontSize: 12, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Replace</button>
+          </div>
+        </div>
+        {/* Business name */}
+        <div style={{ marginBottom: 10 }}>
+          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 5 }}>Business name</div>
+          <input value={fields.businessName ?? ""} onChange={e => onFieldChange("businessName", e.target.value)} placeholder="e.g. La Familia Katonah"
+            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
+            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
+        </div>
+        {/* Order URL */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 5 }}>Order URL</div>
+          <input value={fields.orderUrl ?? ""} onChange={e => onFieldChange("orderUrl", e.target.value)} placeholder="e.g. order.yourstore.com"
+            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 400 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
+            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
+        </div>
+        {/* Actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => { if (accountData) { onFieldChange("businessName", accountData.businessName ?? ""); onFieldChange("orderUrl", accountData.orderUrl ?? ""); } setExpanded(false); }}
+            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted }}>
+            <Icon name="sync" size={14} color={t.textMuted} />Re-sync from Google
+          </button>
+          <div style={{ flex: 1 }} />
+          <button onClick={() => setExpanded(false)} style={{ padding: "6px 16px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
+        </div>
+      </div>
+      <div style={{ borderTop: `1px solid ${t.border}`, padding: "8px 14px" }}>
+        <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.textMuted }}>Synced from Google Business Profile · Edits update your flyer only</span>
+      </div>
+    </div>
+  );
+}
+
 function FlyerEditorModal({
   template, onClose, onToast, onSave, initialFields, initialTheme, initialExportSize,
+  isConnected = false, accountData, onShowGBConnect,
 }: {
   template: FlyerTemplate;
   onClose: () => void;
@@ -822,6 +967,9 @@ function FlyerEditorModal({
   initialFields?: Record<string, string>;
   initialTheme?: string;
   initialExportSize?: string;
+  isConnected?: boolean;
+  accountData?: AccountData;
+  onShowGBConnect?: () => void;
 }) {
   const t = useTheme();
   const flyerH = template.flyerHeight ?? 566;
@@ -844,7 +992,6 @@ function FlyerEditorModal({
   const [downloading,        setDownloading]       = useState(false);
   const [logo,               setLogo]              = useState<string | null>(null);
   const [photo,              setPhoto]             = useState<string | null>(PRESET_FOOD_PHOTOS[0].url);
-  const [editingBusinessInfo, setEditingBusinessInfo] = useState(false);
   const logoRef             = useRef<HTMLInputElement>(null);
   const photoRef            = useRef<HTMLInputElement>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
@@ -920,49 +1067,16 @@ function FlyerEditorModal({
 
             <input ref={logoRef} type="file" accept="image/*" hidden onChange={e => handleFileUpload(e, setLogo)} />
 
-            {/* Business info row — all templates */}
-            {!editingBusinessInfo ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12 }}>
-                <div onClick={() => logoRef.current?.click()} title="Change logo" style={{ flexShrink: 0, cursor: "pointer", position: "relative" }}>
-                  <LogoOrAvatar logo={logo} size={44} />
-                  <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon name="photo_camera" size={11} color={t.textMuted} />
-                  </div>
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 700, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</div>
-                  <div style={{ fontFamily: EDITOR_FONT, fontSize: 14, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.orderUrl || "your-order-url.com"}</div>
-                </div>
-                <button onClick={() => setEditingBusinessInfo(true)} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, transition: "border-color 150ms ease" }} onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)} onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}>
-                  <Icon name="edit" size={16} color={t.textMuted} />
-                  <span style={{ fontSize: 14, fontWeight: 500, color: t.textMuted }}>Edit</span>
-                </button>
-              </div>
-            ) : (
-              /* Edit mode — in-place */
-              <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 12 }}>
-                <div onClick={() => logoRef.current?.click()} title="Change logo" style={{ flexShrink: 0, cursor: "pointer", position: "relative" }}>
-                  <LogoOrAvatar logo={logo} size={44} />
-                  <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Icon name="photo_camera" size={11} color={t.textMuted} />
-                  </div>
-                </div>
-                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                  {bizFields.map(f => (
-                    <input
-                      key={f.id}
-                      value={fields[f.id] ?? ""}
-                      onChange={e => setField(f.id, e.target.value)}
-                      placeholder={f.placeholder}
-                      style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: f.id === "businessName" ? 600 : 400, color: t.text, outline: "none", boxSizing: "border-box", transition: "border-color 150ms ease" }}
-                      onFocus={e => (e.target.style.borderColor = t.accent)}
-                      onBlur={e => (e.target.style.borderColor = t.border)}
-                    />
-                  ))}
-                </div>
-                <button onClick={() => setEditingBusinessInfo(false)} style={{ flexShrink: 0, padding: "6px 14px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600, color: "#FFFFFF" }}>Done</button>
-              </div>
-            )}
+            {/* Business info card — all templates */}
+            <BusinessInfoCard
+              fields={fields}
+              logo={logo}
+              onFieldChange={setField}
+              onLogoClick={() => logoRef.current?.click()}
+              isConnected={isConnected}
+              accountData={accountData}
+              onShowConnect={onShowGBConnect}
+            />
 
             {/* Offer fields — only non-business fields */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -1524,6 +1638,9 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
           initialFields={editingFlyer?.fields ?? getPrefilledFields()}
           initialTheme={editingFlyer?.themeId}
           initialExportSize={editingFlyer?.exportSize}
+          isConnected={isConnected}
+          accountData={account}
+          onShowGBConnect={() => { setEditorFlyer(null); setEditingFlyer(null); setShowGBModal(true); }}
         />
       )}
     </>
