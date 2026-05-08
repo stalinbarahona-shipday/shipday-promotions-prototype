@@ -942,7 +942,165 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
   );
 }
 
-function EditorPreview({ templateId, fields, themeId, logo, photo, onFieldChange, onPhotoClick, onLogoClick }: { templateId: string; fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null; onFieldChange?: (id: string, value: string) => void; onPhotoClick?: () => void; onLogoClick?: () => void }) {
+/* ══════════════════════════════════════════════
+   SOCIAL (1 : 1 square) LIVE PREVIEWS  400 × 400
+   All dimensions = Figma spec × (400 / 1080)
+══════════════════════════════════════════════ */
+
+function SocialShipLogo() {
+  return (
+    <div style={{ width: 16.5, height: 16.5, position: "relative", flexShrink: 0 }}>
+      <div style={{ position: "absolute", width: 11.7, height: 11.7, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", width: 11.7, height: 11.7, left: 4.8, top: 4.8, background: "#ABE571", borderRadius: "50%" }} />
+      <div style={{ position: "absolute", width: 7.1,  height: 7.1,  left: 4.7, top: 4.7, background: "#008062", borderRadius: "50%" }} />
+    </div>
+  );
+}
+
+function SocialPromoBox({ pill, pillText, promoCode }: { pill: string; pillText: string; promoCode: string }) {
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 12px", height: 25, background: pill, borderRadius: 4, gap: 4 }}>
+      <span style={{ fontSize: 10, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif" }}>Promo code</span>
+      <span style={{ fontSize: 10, fontWeight: 700, color: pillText, fontFamily: "Inter, system-ui, sans-serif" }}>{promoCode}</span>
+    </div>
+  );
+}
+
+/* ── Social: % Off Discount ───────────────────
+   Left 260px: content (logo · headline · promo · QR)
+   Right 140px: photo                               */
+function SocialMenuPricesPreview({ fields, themeId, logo, photo }: { fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null }) {
+  const flyerTheme = (FLYER_THEMES as readonly FlyerTheme[]).find(t => t.id === themeId) ?? FLYER_THEMES[0];
+  const tc         = flyerThemeToTokens(flyerTheme);
+  const name       = fields.businessName?.trim() || "";
+  const headline   = fields.headline?.trim()     || "Same food. Lower price.";
+  const body       = fields.bodyCopy?.trim()     || "";
+  const url        = fields.orderUrl?.trim()     || "yourbusiness.com/order";
+  return (
+    <div style={{ width: 400, height: 400, background: tc.bg, position: "relative", overflow: "hidden", fontFamily: "Inter, system-ui, sans-serif" }}>
+      {/* Left content column: 702/1080 × 400 = 260px */}
+      <div style={{
+        position: "absolute", left: 0, top: 0, width: 260, height: 400,
+        display: "flex", flexDirection: "column", justifyContent: "space-between",
+        padding: "21px 18px", boxSizing: "border-box",
+      }}>
+        {/* Top: logo row + offer (headline · divider · body) */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 24 }}>
+          <div style={{ display: "flex", flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 5.5 }}>
+            <LogoOrAvatar logo={logo ?? null} size={17} />
+            {name && <span style={{ fontSize: 9.6, fontWeight: 600, color: tc.textPrimary }}>{name}</span>}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 15, width: "100%" }}>
+            <span style={{ fontSize: 24, fontWeight: 700, color: tc.textPrimary, textAlign: "center", letterSpacing: "-0.02em", lineHeight: "110%", display: "block" }}>{headline}</span>
+            <div style={{ width: 74, height: 0, borderTop: `1px solid ${tc.dividerColor}` }} />
+            {body && <span style={{ fontSize: 10, fontWeight: 400, color: tc.textBody, textAlign: "center", lineHeight: "140%" }}>{body}</span>}
+          </div>
+        </div>
+        {/* Bottom: "Order direct & save." + QR + URL */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7 }}>
+            <span style={{ fontSize: 9.6, fontWeight: 500, color: tc.textBody, textAlign: "center" }}>Order direct &amp; save.</span>
+            <QRCodeSVG value={toQrUrl(url)} size={82} level="M" fgColor={tc.dark ? "#FFFFFF" : "#0A0A0A"} bgColor="transparent" />
+          </div>
+          <span style={{ fontSize: 10, fontWeight: 400, color: tc.textPrimary, textAlign: "center" }}>{url}</span>
+        </div>
+      </div>
+      {/* Right photo: 378/1080 × 400 = 140px */}
+      <div style={{ position: "absolute", right: 0, top: 0, width: 140, height: 400, overflow: "hidden", background: "#ADADAD" }}>
+        {photo && <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+      </div>
+    </div>
+  );
+}
+
+/* ── Social: % Off Discount ───────────────────
+   Top 208px: logo · headline · promo pill
+   Bottom 192px: full photo + white QR card     */
+function SocialDiscountPreview({ fields, themeId, logo, photo }: { fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null }) {
+  const flyerTheme = FLYER_THEMES.find(ft => ft.id === themeId);
+  const ft         = flyerTheme ?? FLYER_THEMES[0];
+  const tc         = flyerTheme ? flyerThemeToTokens(flyerTheme) : flyerThemeToTokens(FLYER_THEMES[0]);
+  const name       = fields.businessName?.trim() || "Your Business";
+  const headline   = fields.headline?.trim()     || "15% Off your next order";
+  const promo      = fields.details?.trim()      || "";
+  const terms      = fields.termsText?.trim()    || "";
+  const url        = fields.orderUrl?.trim()     || "yourbusiness.com/order";
+  return (
+    <div style={{ width: 400, height: 400, background: tc.bg, position: "relative", overflow: "hidden", fontFamily: "Inter, system-ui, sans-serif" }}>
+      {/* Top content: 400×208 */}
+      <div style={{ position: "absolute", left: 0, top: 0, width: 400, height: 208, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 21, gap: 18, boxSizing: "border-box" }}>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 5.5 }}>
+          <LogoOrAvatar logo={logo ?? null} size={17} />
+          {name && <span style={{ fontSize: 9.6, fontWeight: 600, color: tc.textPrimary }}>{name}</span>}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 18, width: 358 }}>
+          <span style={{ fontSize: 25, fontWeight: 700, color: tc.textPrimary, textAlign: "center", letterSpacing: "-0.02em", lineHeight: "110%", display: "block", width: "100%" }}>{headline}</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+            {promo && <SocialPromoBox pill={ft.pill} pillText={ft.pillText} promoCode={promo} />}
+            {terms && <span style={{ fontSize: 8, color: tc.textBody, textAlign: "center" }}>{terms}</span>}
+          </div>
+        </div>
+      </div>
+      {/* Bottom image: 400×192, top=208 */}
+      <div style={{ position: "absolute", left: 0, top: 208, width: 400, height: 192, overflow: "hidden", background: "#ADADAD" }}>
+        {photo && <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+        {/* White QR card: wider to fit text on one line, bottom-right */}
+        <div style={{ position: "absolute", right: 12, bottom: 12, width: 112, height: 116, background: "#FFFFFF", borderRadius: 5, display: "flex", flexDirection: "column", alignItems: "center", padding: 7, gap: 5, boxSizing: "border-box" }}>
+          <span style={{ fontSize: 9, fontWeight: 500, color: "#262626", textAlign: "center", lineHeight: "140%", width: "100%", whiteSpace: "nowrap" }}>Scan to order direct</span>
+          <QRCodeSVG value={toQrUrl(url)} size={84} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Social: Free Item or Delivery ───────────
+   padding 21px · logo row · photo (flex) · text+QR row */
+function SocialFreeItemPreview({ fields, themeId, logo, photo }: { fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null }) {
+  const flyerTheme = FLYER_THEMES.find(ft => ft.id === themeId);
+  const ft         = flyerTheme ?? FLYER_THEMES[0];
+  const tc         = flyerTheme ? flyerThemeToTokens(flyerTheme) : flyerThemeToTokens(FLYER_THEMES[0]);
+  const name       = fields.businessName?.trim() || "Your Business";
+  const headline   = fields.headline?.trim()     || "Get free garlic knots on orders over $20";
+  const promo      = fields.details?.trim()      || "";
+  const terms      = fields.termsText?.trim()    || "";
+  const url        = fields.orderUrl?.trim()     || "yourbusiness.com/order";
+  const isDark     = tc.dark;
+  return (
+    <div style={{ width: 400, height: 400, background: tc.bg, display: "flex", flexDirection: "column", padding: 21, gap: 17, boxSizing: "border-box", fontFamily: "Inter, system-ui, sans-serif", overflow: "hidden" }}>
+      {/* Logo row */}
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 5.5, flexShrink: 0 }}>
+        <LogoOrAvatar logo={logo ?? null} size={17} />
+        {name && <span style={{ fontSize: 9.6, fontWeight: 600, color: tc.textPrimary }}>{name}</span>}
+      </div>
+      {/* Content: photo + text row */}
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, gap: 15, minHeight: 0 }}>
+        {/* Photo — fills remaining height */}
+        <div style={{ flex: 1, minHeight: 0, overflow: "hidden", background: photo ? "#ADADAD" : tc.photoBg }}>
+          {photo && <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
+        </div>
+        {/* Text + QR row — height is content-driven so photo grows when text is short */}
+        <div style={{ display: "flex", flexDirection: "row", gap: 30, flexShrink: 0, alignItems: "flex-start" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1, minWidth: 0, alignItems: "flex-start" }}>
+            <span style={{ fontSize: 25, fontWeight: 700, color: tc.textPrimary, letterSpacing: "-0.02em", lineHeight: "100%", display: "block", whiteSpace: "pre-line" }}>{headline}</span>
+            {promo && <SocialPromoBox pill={ft.pill} pillText={ft.pillText} promoCode={promo} />}
+            {terms && <span style={{ fontSize: 8, color: tc.textBody, lineHeight: "150%", opacity: 0.7 }}>{terms}</span>}
+          </div>
+          <div style={{ width: 90, height: 90, background: "#FFFFFF", borderRadius: 8, padding: 5, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <QRCodeSVG value={toQrUrl(url)} size={80} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditorPreview({ templateId, fields, themeId, logo, photo, social, onFieldChange, onPhotoClick, onLogoClick }: { templateId: string; fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null; social?: boolean; onFieldChange?: (id: string, value: string) => void; onPhotoClick?: () => void; onLogoClick?: () => void }) {
+  if (social) {
+    if (templateId === "discount") return <SocialDiscountPreview   fields={fields} themeId={themeId} logo={logo} photo={photo} />;
+    if (templateId === "freeItem") return <SocialFreeItemPreview   fields={fields} themeId={themeId} logo={logo} photo={photo} />;
+    return                                <SocialMenuPricesPreview  fields={fields} themeId={themeId} logo={logo} photo={photo} />;
+  }
   if (templateId === "discount") return <DiscountLivePreview fields={fields} themeId={themeId} logo={logo} photo={photo} />;
   if (templateId === "freeItem")  return <FreeItemLivePreview  fields={fields} themeId={themeId} logo={logo} photo={photo} onPhotoClick={onPhotoClick} onLogoClick={onLogoClick} />;
   return <MenuPricesLivePreview fields={fields} themeId={themeId} logo={logo} photo={photo} onFieldChange={onFieldChange} onPhotoClick={onPhotoClick} onLogoClick={onLogoClick} />;
@@ -973,41 +1131,175 @@ function GoogleBadge() {
   );
 }
 
+function GoogleGLogo({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="Google">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+  );
+}
+
+function GoogleConnectBanner({ onConnect }: { onConnect: () => void }) {
+  const t = useTheme();
+  return (
+    <div style={{
+      display: "flex", flexDirection: "row", alignItems: "center", gap: 16,
+      padding: "14px 20px",
+      background: t.mode === "light" ? "#F9FAFB" : t.bgTertiary,
+      border: `0.5px solid ${t.border}`,
+      borderRadius: 16,
+    }}>
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#FFFFFF", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.10)" }}>
+        <GoogleGLogo size={22} />
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600, color: t.text, lineHeight: "140%" }}>
+          Connect Google Business Profile
+        </span>
+        <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 400, color: t.textSecondary, lineHeight: "140%" }}>
+          Auto-fill your business name and order link across all your flyers.
+        </span>
+      </div>
+      <button
+        onClick={onConnect}
+        style={{ flexShrink: 0, padding: "8px 18px", background: t.accent, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600, color: "#FFFFFF", transition: "opacity 150ms ease" }}
+        onMouseEnter={e => (e.currentTarget.style.opacity = "0.85")}
+        onMouseLeave={e => (e.currentTarget.style.opacity = "1")}
+      >
+        Connect
+      </button>
+    </div>
+  );
+}
+
+function GoogleConnectedBanner({ account, onManage }: { account: AccountData; onManage: () => void }) {
+  const t = useTheme();
+  const subtext = [account.tagline?.split(" · ")[0], account.orderUrl].filter(Boolean).join(" · ");
+  return (
+    <div style={{
+      display: "flex", flexDirection: "row", alignItems: "center", gap: 16,
+      padding: "14px 20px",
+      background: t.mode === "light" ? "#F9FAFB" : t.bgTertiary,
+      border: `0.5px solid ${t.border}`,
+      borderRadius: 16,
+    }}>
+      <div style={{ width: 40, height: 40, borderRadius: 10, background: "#FFFFFF", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.10)" }}>
+        <GoogleGLogo size={22} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700, color: t.text, lineHeight: "140%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {account.businessName || "Your Business"}
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, background: "#DCFCE7", borderRadius: 99, padding: "1px 7px", flexShrink: 0 }}>
+            <Icon name="check" size={11} color="#16A34A" />
+            <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, fontWeight: 600, color: "#16A34A", lineHeight: "140%" }}>Connected</span>
+          </div>
+        </div>
+        {subtext ? (
+          <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 400, color: t.textSecondary, lineHeight: "140%", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {subtext}
+          </span>
+        ) : null}
+      </div>
+      <button
+        onClick={onManage}
+        style={{ flexShrink: 0, padding: "8px 18px", background: "none", border: `1px solid ${t.border}`, borderRadius: 9, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600, color: t.text, transition: "background 150ms ease" }}
+        onMouseEnter={e => (e.currentTarget.style.background = t.bgSecondary)}
+        onMouseLeave={e => (e.currentTarget.style.background = "none")}
+      >
+        Manage
+      </button>
+    </div>
+  );
+}
+
+/* ── Shared biz-card form body (used by both manual + connected edit) ── */
+function BizEditForm({ fields, logo, onFieldChange, onLogoClick, onLogoReset, onDone }: {
+  fields: Record<string, string>; logo: string | null;
+  onFieldChange: (id: string, v: string) => void;
+  onLogoClick: () => void; onLogoReset?: () => void; onDone: () => void;
+}) {
+  const t = useTheme();
+  return (
+    <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div onClick={onLogoClick} title="Change logo" style={{ flexShrink: 0, cursor: "pointer", position: "relative" }}>
+          <LogoOrAvatar logo={logo} size={48} />
+          <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Icon name="photo_camera" size={10} color={t.textMuted} />
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <span style={{ fontFamily: EDITOR_FONT, fontSize: 12, fontWeight: 500 as const, color: t.textMuted }}>Logo</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={onLogoClick} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Replace</button>
+            {logo && onLogoReset && (
+              <>
+                <span style={{ color: t.border, userSelect: "none" as const }}>·</span>
+                <button onClick={onLogoReset} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Use Google logo</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted }}>Business name</span>
+        <input value={fields.businessName ?? ""} onChange={e => onFieldChange("businessName", e.target.value)} placeholder="e.g. La Familia Katonah"
+          style={{ width: "100%", height: 40, padding: "0 12px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 9, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
+          onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted }}>Order URL</span>
+        <input value={fields.orderUrl ?? ""} onChange={e => onFieldChange("orderUrl", e.target.value)} placeholder="e.g. order.yourstore.com"
+          style={{ width: "100%", height: 40, padding: "0 12px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 9, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 400 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
+          onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <button onClick={onDone} style={{ padding: "9px 22px", background: t.accent, border: "none", borderRadius: 9, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Shared biz-card view (Image #33 style) ─────────── */
+function BizInfoView({ fields, logo, indicator, onEditClick }: {
+  fields: Record<string, string>; logo: string | null;
+  indicator?: React.ReactNode; onEditClick: () => void;
+}) {
+  const t = useTheme();
+  return (
+    <div style={{ background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14, padding: 16 }}>
+        <LogoOrAvatar logo={logo} size={48} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
+            {indicator}
+          </div>
+          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>{fields.orderUrl || "your-order-url.com"}</div>
+        </div>
+      </div>
+      <div style={{ height: 1, background: t.border }} />
+      <button onClick={onEditClick} style={{ width: "100%", height: 44, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, background: "none", border: "none", cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 500 as const, color: t.textSecondary, transition: "background 150ms ease" }}
+        onMouseEnter={e => (e.currentTarget.style.background = t.surface)} onMouseLeave={e => (e.currentTarget.style.background = "none")}>
+        <Icon name="edit" size={15} color={t.textMuted} />Edit details
+      </button>
+    </div>
+  );
+}
+
 /* ── Manual (not-connected) business card ─────────── */
 function ManualBizCard({ fields, logo, onFieldChange, onLogoClick }: { fields: Record<string, string>; logo: string | null; onFieldChange: (id: string, v: string) => void; onLogoClick: () => void }) {
   const t = useTheme();
   const [editing, setEditing] = useState(false);
-  const logoBadge = (
-    <div onClick={onLogoClick} title="Change logo" style={{ flexShrink: 0, cursor: "pointer", position: "relative" }}>
-      <LogoOrAvatar logo={logo} size={44} />
-      <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Icon name="photo_camera" size={11} color={t.textMuted} />
-      </div>
-    </div>
-  );
-  if (!editing) return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12 }}>
-      {logoBadge}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</div>
-        <div style={{ fontFamily: EDITOR_FONT, fontSize: 14, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.orderUrl || "your-order-url.com"}</div>
-      </div>
-      <button onClick={() => setEditing(true)} style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, padding: "6px 14px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, transition: "border-color 150ms ease" }} onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)} onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}>
-        <Icon name="edit" size={16} color={t.textMuted} /><span style={{ fontSize: 14, fontWeight: 500 as const, color: t.textMuted }}>Edit</span>
-      </button>
-    </div>
-  );
+  if (!editing) return <BizInfoView fields={fields} logo={logo} onEditClick={() => setEditing(true)} />;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 12 }}>
-      {logoBadge}
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-        {([{ id: "businessName", ph: "e.g. La Familia Katonah", w: 600 }, { id: "orderUrl", ph: "e.g. order.yourstore.com", w: 400 }] as const).map(f => (
-          <input key={f.id} value={fields[f.id] ?? ""} onChange={e => onFieldChange(f.id, e.target.value)} placeholder={f.ph}
-            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: f.w, color: t.text, outline: "none", boxSizing: "border-box" as const, transition: "border-color 150ms ease" }}
-            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
-        ))}
-      </div>
-      <button onClick={() => setEditing(false)} style={{ flexShrink: 0, padding: "6px 14px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
+    <div style={{ background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 14, overflow: "hidden" }}>
+      <BizEditForm fields={fields} logo={logo} onFieldChange={onFieldChange} onLogoClick={onLogoClick} onDone={() => setEditing(false)} />
     </div>
   );
 }
@@ -1026,123 +1318,30 @@ function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, onLogoRese
 }) {
   const t = useTheme();
   const [expanded, setExpanded] = useState(false);
-  const [promptDismissed, setPromptDismissed] = useState(false);
-  const [resyncConfirm, setResyncConfirm] = useState(false);
 
   if (!isConnected) return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {!promptDismissed && (
-        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(37,99,235,0.07)", border: "1px solid rgba(37,99,235,0.18)", borderRadius: 10 }}>
-          <Icon name="link" size={15} color="#2563EB" />
-          <span style={{ flex: 1, fontFamily: EDITOR_FONT, fontSize: 13, color: t.text, lineHeight: "140%" }}>Connect Google Business Profile to auto-fill this info</span>
-          <button onClick={onShowConnect} style={{ flexShrink: 0, padding: "5px 12px", background: t.accent, border: "none", borderRadius: 7, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Connect</button>
-          <button onClick={() => setPromptDismissed(true)} style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, background: "none", border: "none", cursor: "pointer", borderRadius: 6, padding: 0 }}>
-            <Icon name="close" size={14} color={t.textMuted} />
-          </button>
-        </div>
-      )}
-      <ManualBizCard fields={fields} logo={logo} onFieldChange={onFieldChange} onLogoClick={onLogoClick} />
-    </div>
+    <ManualBizCard fields={fields} logo={logo} onFieldChange={onFieldChange} onLogoClick={onLogoClick} />
   );
-
-  const hasManualEdits = (fields.businessName ?? "") !== (accountData?.businessName ?? "") || (fields.orderUrl ?? "") !== (accountData?.orderUrl ?? "");
-
-  const doResync = () => {
-    if (accountData) {
-      onFieldChange("businessName", accountData.businessName ?? "");
-      onFieldChange("orderUrl", accountData.orderUrl ?? "");
-    }
-    setResyncConfirm(false);
-    setExpanded(false);
-  };
 
   if (!expanded) return (
-    <div onClick={() => setExpanded(true)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12, cursor: "pointer" }}
-      onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)} onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}>
-      <LogoOrAvatar logo={logo} size={36} />
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-          <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
-          <GoogleBadge />
-        </div>
-        <div style={{ fontFamily: EDITOR_FONT, fontSize: 12, color: t.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 1 }}>{fields.orderUrl || "your-order-url.com"}</div>
-      </div>
-      <Icon name="expand_more" size={20} color={t.textMuted} />
-    </div>
+    <BizInfoView
+      fields={fields}
+      logo={logo}
+      indicator={<GoogleGLogo size={14} />}
+      onEditClick={() => setExpanded(true)}
+    />
   );
 
-  // Expanded
   return (
-    <div style={{ background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: "hidden", position: "relative" }}>
-      {/* Re-sync confirmation overlay */}
-      {resyncConfirm && (
-        <div style={{ position: "absolute", inset: 0, zIndex: 10, background: "rgba(0,0,0,0.45)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ margin: "0 16px", padding: "18px 18px 16px", background: t.surface, borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.18)", maxWidth: 280 }}>
-            <div style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: t.text, marginBottom: 8 }}>Re-sync from Google?</div>
-            <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, color: t.textMuted, lineHeight: "140%", marginBottom: 16 }}>Re-syncing will replace your edits with the latest Google data. Continue?</div>
-            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => setResyncConfirm(false)} style={{ padding: "6px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.text }}>Cancel</button>
-              <button onClick={doResync} style={{ padding: "6px 14px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Re-sync</button>
-            </div>
-          </div>
-        </div>
-      )}
-      <div onClick={() => setExpanded(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer" }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-            <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
-            <GoogleBadge />
-          </div>
-        </div>
-        <Icon name="expand_less" size={20} color={t.textMuted} />
-      </div>
-      <div style={{ height: 1, background: t.border }} />
-      <div style={{ padding: 14 }}>
-        {/* Logo row */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 8 }}>Logo</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <LogoOrAvatar logo={logo} size={40} />
-            <button onClick={onLogoClick} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Replace</button>
-            {logo && onLogoReset && (
-              <>
-                <span style={{ color: t.border, fontSize: 13, lineHeight: 1 }}>·</span>
-                <button onClick={onLogoReset} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Use Google logo</button>
-              </>
-            )}
-          </div>
-        </div>
-        {/* Business name */}
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 5 }}>Business name</div>
-          <input value={fields.businessName ?? ""} onChange={e => onFieldChange("businessName", e.target.value)} placeholder="e.g. La Familia Katonah"
-            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
-            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
-        </div>
-        {/* Order URL */}
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 5 }}>Order URL</div>
-          <input value={fields.orderUrl ?? ""} onChange={e => onFieldChange("orderUrl", e.target.value)} placeholder="e.g. order.yourstore.com"
-            style={{ width: "100%", height: 36, padding: "0 10px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 400 as const, color: t.text, outline: "none", boxSizing: "border-box" as const }}
-            onFocus={e => (e.target.style.borderColor = t.accent)} onBlur={e => (e.target.style.borderColor = t.border)} />
-        </div>
-        {/* Actions */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button
-            onClick={() => hasManualEdits ? setResyncConfirm(true) : doResync()}
-            style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.accent, padding: 0 }}>
-            <Icon name="sync" size={14} color={t.accent} />Re-sync from Google
-          </button>
-          <div style={{ flex: 1 }} />
-          <button onClick={() => setExpanded(false)} style={{ padding: "6px 16px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
-        </div>
-      </div>
-      <div style={{ borderTop: `1px solid ${t.border}`, padding: "8px 14px" }}>
-        <div style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.textMuted }}>Synced from Google Business Profile · Changes apply to all your flyers</div>
-        {onManageConnection && (
-          <button onClick={onManageConnection} style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: "3px 0 0", display: "block" }}>Manage connection in Marketing Materials</button>
-        )}
-      </div>
+    <div style={{ background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden" }}>
+      <BizEditForm
+        fields={fields}
+        logo={logo}
+        onFieldChange={onFieldChange}
+        onLogoClick={onLogoClick}
+        onLogoReset={onLogoReset}
+        onDone={() => setExpanded(false)}
+      />
     </div>
   );
 }
@@ -1163,7 +1362,7 @@ function FlyerEditorModal({
   onShowGBConnect?: () => void;
 }) {
   const t = useTheme();
-  const flyerH = template.flyerHeight ?? 566;
+  const flyerH  = template.flyerHeight ?? 566;
   const fieldDefs       = templateFields[template.id] ?? templateFields.menuPrices;
   const availableThemes = template.colorVariants
     ? colorThemes.filter(ct => template.colorVariants!.includes(ct.id))
@@ -1180,6 +1379,7 @@ function FlyerEditorModal({
     return raw;
   });
   const [exportSize, setExportSize] = useState(initialExportSize ?? "print");
+  const activeFlyerH = exportSize === "social" ? 400 : flyerH;
   const [downloading,        setDownloading]       = useState(false);
   const [logo,               setLogo]              = useState<string | null>(null);
   const [photo,              setPhoto]             = useState<string | null>(PRESET_FOOD_PHOTOS[0].url);
@@ -1195,13 +1395,13 @@ function FlyerEditorModal({
     if (!el) return;
     const compute = () => {
       const { width, height } = el.getBoundingClientRect();
-      setPreviewScale(Math.min((width - 64) / 400, (height - 64) / flyerH, 1.4));
+      setPreviewScale(Math.min((width - 64) / 400, (height - 64) / activeFlyerH, 1.4));
     };
     compute();
     const obs = new ResizeObserver(compute);
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [activeFlyerH]);
 
   const setField = (id: string, val: string) => setFields(prev => ({ ...prev, [id]: val }));
   const hasContent = fieldDefs.some(f => fields[f.id]?.trim());
@@ -1224,7 +1424,7 @@ function FlyerEditorModal({
     try {
       const dataUrl = await toPng(flyerRef.current, {
         width: 400,
-        height: flyerH,
+        height: activeFlyerH,
         pixelRatio: 3,
         cacheBust: true,
       });
@@ -1414,6 +1614,7 @@ function FlyerEditorModal({
                     </div>
                   )}
                 </div>
+
               </>
             )}
           </div>
@@ -1438,23 +1639,16 @@ function FlyerEditorModal({
             })}
           </div>
 
-          <div style={{ width: 400, height: flyerH, transform: `scale(${previewScale})`, transformOrigin: "center center", flexShrink: 0, position: "relative" }}>
-            <div ref={flyerRef} style={{ width: 400, height: flyerH, overflow: "hidden", borderRadius: 10, position: "relative", boxShadow: "0 8px 48px rgba(0,0,0,0.16)" }}>
+          <div style={{ width: 400, height: activeFlyerH, transform: `scale(${previewScale})`, transformOrigin: "center center", flexShrink: 0, position: "relative" }}>
+            <div ref={flyerRef} style={{ width: 400, height: activeFlyerH, overflow: "hidden", borderRadius: 10, position: "relative", boxShadow: "0 8px 48px rgba(0,0,0,0.16)" }}>
               <EditorPreview
                 templateId={template.id}
                 fields={fields}
                 themeId={colorTheme}
                 logo={logo}
                 photo={photo}
+                social={exportSize === "social"}
               />
-              {exportSize === "social" && (
-                <>
-                  <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 400, border: "2px dashed rgba(1,173,133,0.5)", borderRadius: 10, pointerEvents: "none" }} />
-                  <div style={{ position: "absolute", top: 400, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.35)", borderRadius: "0 0 10px 10px", pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.8)", letterSpacing: "0.08em", textTransform: "uppercase" }}>Cropped in export</span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
@@ -1623,6 +1817,7 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       description: "Show customers they pay your real prices — save $5–$15 vs. 3rd party.",
       flyerThemes: FLYER_THEMES,
       defaultTheme: "shipday",
+      templateDefaults: { headline: "Same food. Lower price.", bodyCopy: "Apps add 30% to our prices. Order direct and pay our real menu prices." },
     },
     {
       id: "discount",
@@ -1842,48 +2037,25 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
           </>
         )}
 
-        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <span style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, lineHeight: "140%" }}>Create a flyer</span>
 
-          {isConnected ? (
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 24, marginTop: 4 }}>
-              <button
-                onClick={() => setShowGBProfile(true)}
-                style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}
-              >
-                <div style={{ width: 22, height: 22, borderRadius: 99, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <Icon name="check" size={14} color="#16A34A" />
-                </div>
-                <span style={{ fontSize: 14, fontWeight: 600, color: t.text, textDecoration: "underline", textUnderlineOffset: 2 }}>{account.businessName}</span>
-              </button>
-              <button
-                onClick={() => setShowGBModal(true)}
-                style={{ fontSize: 13, fontWeight: 500, color: t.textMuted, background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 2 }}
-              >Change</button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowGBModal(true)}
-              style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8, padding: "9px 16px", height: 40, background: t.surface, border: `1px solid ${t.border}`, borderRadius: 10, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, marginLeft: 24, transition: "border-color 150ms ease" }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = t.accent)}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = t.border)}
-            >
-              <Icon name="travel_explore" size={18} color={t.accent} />
-              <span style={{ fontSize: 14, fontWeight: 500, color: t.text }}>Connect Google Business</span>
-            </button>
-          )}
-        </div>
+          {isConnected
+            ? <GoogleConnectedBanner account={account} onManage={() => setShowGBProfile(true)} />
+            : <GoogleConnectBanner onConnect={() => setShowGBModal(true)} />
+          }
 
-        <div style={{ display: "flex", flexDirection: "row", gap: 24 }}>
-          {flyerTemplates.map(tmpl => (
-            <FlyerCard
-              key={tmpl.id}
-              template={tmpl}
-              account={account}
-              onCreate={() => { setEditingFlyer(null); setEditorFlyer(tmpl); }}
-              onToast={onToast}
-            />
-          ))}
+          <div style={{ display: "flex", flexDirection: "row", gap: 24 }}>
+            {flyerTemplates.map(tmpl => (
+              <FlyerCard
+                key={tmpl.id}
+                template={tmpl}
+                account={account}
+                onCreate={() => { setEditingFlyer(null); setEditorFlyer(tmpl); }}
+                onToast={onToast}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
