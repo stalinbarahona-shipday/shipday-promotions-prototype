@@ -1287,6 +1287,8 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
 
 function FlyerPreviewModal({ template, account, onCreate, onClose }: { template: FlyerTemplate; account: AccountData; onCreate: () => void; onClose: () => void }) {
   const t = useTheme();
+  const flyerH  = template.flyerHeight ?? 566;
+  const scale   = 517 / flyerH;
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
@@ -1305,8 +1307,12 @@ function FlyerPreviewModal({ template, account, onCreate, onClose }: { template:
             <Icon name="close" size={24} color={t.textMuted} />
           </button>
         </div>
-        <div className="[&::-webkit-scrollbar]:hidden" style={{ padding: "40px 32px 48px", display: "flex", justifyContent: "center", overflowY: "auto", scrollbarWidth: "none" }}>
-          <EditorPreview templateId={template.id} fields={{ ...(template.templateDefaults ?? {}), ...(account as unknown as Record<string, string>) }} themeId={template.defaultTheme ?? "shipday"} />
+        <div style={{ padding: "40px 32px 48px", display: "flex", justifyContent: "center" }}>
+          <div style={{ width: Math.round(400 * scale), height: 517, overflow: "hidden", flexShrink: 0, borderRadius: 10, boxShadow: "0 8px 48px rgba(0,0,0,0.16)" }}>
+            <div style={{ transformOrigin: "top left", transform: `scale(${scale})` }}>
+              <EditorPreview templateId={template.id} fields={{ ...(template.templateDefaults ?? {}), ...(account as unknown as Record<string, string>) }} themeId={template.defaultTheme ?? "shipday"} />
+            </div>
+          </div>
         </div>
         <div style={{ padding: "0 32px 32px" }}>
           <button onClick={() => { onClose(); onCreate(); }} style={{ width: "100%", height: 52, background: t.accent, border: "none", borderRadius: 10, cursor: "pointer", fontSize: 16, fontWeight: 600, color: "#FFFFFF", fontFamily: "inherit" }}>
