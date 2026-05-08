@@ -595,14 +595,14 @@ function getContrastRatio(hexA: string, hexB: string): number {
 
 const FLYER_THEMES = [
   { id: "classic",  label: "Classic",  bg: "#FFFFFF", pill: "#000000", text: "#000000", pillText: "#FFFFFF" },
-  { id: "shipday",  label: "Shipday",  bg: "#ECFDF5", pill: "#34D399", text: "#064E3B", pillText: "#000000" },
-  { id: "ocean",    label: "Ocean",    bg: "#CFFAFE", pill: "#22D3EE", text: "#164E63", pillText: "#000000" },
-  { id: "royal",    label: "Royal",    bg: "#DBEAFE", pill: "#3B82F6", text: "#1E3A8A", pillText: "#FFFFFF" },
-  { id: "violet",   label: "Violet",   bg: "#EDE9FE", pill: "#8B5CF6", text: "#4C1D95", pillText: "#FFFFFF" },
-  { id: "rose",     label: "Rose",     bg: "#FCE7F3", pill: "#EC4899", text: "#831843", pillText: "#FFFFFF" },
-  { id: "crimson",  label: "Crimson",  bg: "#FEE2E2", pill: "#EF4444", text: "#7F1D1D", pillText: "#FFFFFF" },
-  { id: "rust",     label: "Rust",     bg: "#FFEDD5", pill: "#FB923C", text: "#7C2D12", pillText: "#000000" },
-  { id: "amber",    label: "Amber",    bg: "#FEF3C7", pill: "#FCD34D", text: "#78350F", pillText: "#000000" },
+  { id: "shipday",  label: "Shipday",  bg: "#ECFDF5", pill: "#34D399", text: "#0A0A0A", pillText: "#000000" },
+  { id: "ocean",    label: "Ocean",    bg: "#CFFAFE", pill: "#22D3EE", text: "#0A0A0A", pillText: "#000000" },
+  { id: "royal",    label: "Royal",    bg: "#DBEAFE", pill: "#3B82F6", text: "#0A0A0A", pillText: "#FFFFFF" },
+  { id: "violet",   label: "Violet",   bg: "#EDE9FE", pill: "#8B5CF6", text: "#0A0A0A", pillText: "#FFFFFF" },
+  { id: "rose",     label: "Rose",     bg: "#FCE7F3", pill: "#EC4899", text: "#0A0A0A", pillText: "#FFFFFF" },
+  { id: "crimson",  label: "Crimson",  bg: "#FEE2E2", pill: "#EF4444", text: "#0A0A0A", pillText: "#FFFFFF" },
+  { id: "rust",     label: "Rust",     bg: "#FFEDD5", pill: "#FB923C", text: "#0A0A0A", pillText: "#000000" },
+  { id: "amber",    label: "Amber",    bg: "#FEF3C7", pill: "#FCD34D", text: "#0A0A0A", pillText: "#000000" },
   { id: "stone",    label: "Stone",    bg: "#292524", pill: "#E7E5E4", text: "#F5F5F4", pillText: "#000000" },
   { id: "charcoal", label: "Charcoal", bg: "#1F2937", pill: "#F3F4F6", text: "#F9FAFB", pillText: "#000000" },
 ] as const;
@@ -954,7 +954,7 @@ function FlyerEditorModal({
                 {template.flyerThemes ? (
                   template.flyerThemes.map(ft => {
                     const sel = colorTheme === ft.id;
-                    const isNearWhite = ft.id === "stone" || ft.id === "charcoal";
+                    const isDark = ft.id === "stone" || ft.id === "charcoal";
                     return (
                       <div
                         key={ft.id}
@@ -962,8 +962,8 @@ function FlyerEditorModal({
                         title={ft.label}
                         style={{
                           width: 26, height: 26, borderRadius: 99,
-                          background: ft.pill,
-                          border: isNearWhite ? "0.5px solid #D1D5DB" : "none",
+                          background: isDark ? ft.bg : ft.pill,
+                          border: "none",
                           cursor: "pointer", flexShrink: 0,
                           boxShadow: sel
                             ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}`
