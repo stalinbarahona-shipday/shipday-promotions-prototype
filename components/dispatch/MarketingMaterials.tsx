@@ -1227,10 +1227,10 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       previewBg: "#FFFFFF",
       label: "% Off Discount",
       description: "Offer a percentage discount on their next direct order.",
-      defaultTheme: "classic",
+      defaultTheme: "violet",
       flyerHeight: 517,
       flyerThemes: FLYER_THEMES,
-      templateDefaults: { headline: "15% Off your next order", details: "DIRECT15", termsText: "T&Cs apply · Valid until Dec 31, 2024" },
+      templateDefaults: { headline: "15% Off your next direct order", details: "DIRECT15", termsText: "T&Cs apply · Valid until Dec 31, 2024" },
     },
     {
       id: "freeItem",
