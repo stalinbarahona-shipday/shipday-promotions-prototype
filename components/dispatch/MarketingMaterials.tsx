@@ -388,7 +388,7 @@ const templateFields: Record<string, FieldDef[]> = {
   ],
   freeItem: [
     { id: "businessName", label: "Business name",      placeholder: "e.g. La Familia Katonah" },
-    { id: "headline",     label: "Offer title",        placeholder: "e.g. Get free garlic knots on orders over $20", maxLength: 50 },
+    { id: "headline",     label: "Offer title",        placeholder: "e.g. Get free garlic knots on orders over $20", maxLength: 42 },
     { id: "details",      label: "Promo code",         placeholder: "e.g. OFF20" },
     { id: "termsText",    label: "Terms & expiration", placeholder: "e.g. T&Cs apply · Offer ends 30.05.26" },
     { id: "orderUrl",     label: "QR code link",       placeholder: "e.g. order.yourstore.com" },
