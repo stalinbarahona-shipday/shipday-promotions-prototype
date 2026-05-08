@@ -387,15 +387,11 @@ const templateFields: Record<string, FieldDef[]> = {
     { id: "orderUrl",     label: "QR code link",       placeholder: "e.g. order.yourstore.com" },
   ],
   freeItem: [
-    { id: "businessName",  label: "Business name",     placeholder: "e.g. La Familia Katonah" },
-    { id: "tagline",       label: "Tagline",           placeholder: "e.g. Pizza & Italian · Since 2004" },
-    { id: "freeItem",      label: "Free item",         placeholder: "e.g. Garlic Knots" },
-    { id: "minimumOrder",  label: "Minimum order ($)", placeholder: "e.g. 25" },
-    { id: "offer",         label: "Offer title",       placeholder: "e.g. Order direct and get something free every time" },
-    { id: "details",       label: "Offer description", placeholder: "e.g. Available on all orders. No code needed.", multiline: true },
-    { id: "deliveryAreas", label: "Delivery areas",    placeholder: "e.g. Katonah · Bedford · Mt. Kisco" },
-    { id: "googleRating",  label: "Google rating",     placeholder: "e.g. 4.7" },
-    { id: "orderUrl",      label: "QR code link",      placeholder: "e.g. order.yourstore.com" },
+    { id: "businessName", label: "Business name",      placeholder: "e.g. La Familia Katonah" },
+    { id: "headline",     label: "Offer title",        placeholder: "e.g. Get free garlic knots on orders over $20", maxLength: 80 },
+    { id: "details",      label: "Promo code",         placeholder: "e.g. OFF20" },
+    { id: "termsText",    label: "Terms & expiration", placeholder: "e.g. T&Cs apply · Offer ends 30.05.26" },
+    { id: "orderUrl",     label: "QR code link",       placeholder: "e.g. order.yourstore.com" },
   ],
 };
 
@@ -723,58 +719,73 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
   );
 }
 
-function FreeItemLivePreview({ fields, themeId, logo, photo }: PreviewProps) {
+function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLogoClick }: PreviewProps) {
   const flyerTheme = FLYER_THEMES.find(ft => ft.id === themeId);
   const tc         = flyerTheme ? flyerThemeToTokens(flyerTheme) : (MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint);
-  const name   = fields.businessName?.trim()  || "Your Business";
-  const item   = fields.freeItem?.trim()       || "Garlic Knots";
-  const minOrd = fields.minimumOrder?.trim()   || "25";
-  const url    = fields.orderUrl?.trim()       || "yourbusiness.com/order";
-  return (
-    <div style={{ width: 400, height: 566, background: "#FFFFFF", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+  const pillBg     = flyerTheme ? flyerTheme.pill     : "#2FD8A2";
+  const pillText   = flyerTheme ? flyerTheme.pillText : "#0A0A0A";
 
-      {/* Hero photo — full width top */}
-      <div style={{ width: 400, height: 200, flexShrink: 0, background: tc.photoBg, overflow: "hidden", position: "relative" }}>
-        {photo && <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-        {/* Gradient overlay for text legibility */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: "linear-gradient(to top, rgba(0,0,0,0.5), transparent)", pointerEvents: "none" }} />
-        {/* Logo + name on photo */}
-        <div style={{ position: "absolute", top: 16, left: 20, display: "flex", alignItems: "center", gap: 8 }}>
-          <LogoOrAvatar logo={logo} size={28} />
-          <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF", fontFamily: "Inter, system-ui, sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.3)" }}>{name}</span>
+  const name     = fields.businessName?.trim() || "Your Business";
+  const headline = fields.headline?.trim()     || "Get free garlic knots on orders over $20";
+  const promo    = fields.details?.trim();
+  const terms    = fields.termsText?.trim();
+  const url      = fields.orderUrl?.trim()     || "yourbusiness.com/order";
+
+  return (
+    <div style={{ width: 400, height: 517, background: tc.bg, position: "relative", overflow: "hidden" }}>
+
+      {/* Logo — top:20, left:20 */}
+      <div style={{ position: "absolute", top: 20, left: 20, display: "flex", flexDirection: "row", alignItems: "center", padding: "11px 8px", gap: 10, borderRadius: 8 }}>
+        <div onClick={onLogoClick} style={{ cursor: onLogoClick ? "pointer" : "default" }}>
+          <LogoOrAvatar logo={logo} size={18} />
         </div>
-        {/* "FREE" badge on photo */}
-        <div style={{ position: "absolute", bottom: 16, left: 20, background: tc.bg, borderRadius: 8, padding: "6px 14px" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: tc.textPrimary, letterSpacing: "0.1em", textTransform: "uppercase", fontFamily: "Inter, system-ui, sans-serif" }}>Free with your order</span>
-        </div>
+        <span style={{ fontSize: 11.76, fontWeight: 600, color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif", lineHeight: "140%" }}>
+          {name}
+        </span>
       </div>
 
-      {/* Content — theme bg */}
-      <div style={{ flex: 1, background: tc.bg, display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 28px 20px" }}>
-
-        {/* Hero text */}
-        <span style={{ fontSize: 38, fontWeight: 800, color: tc.textPrimary, letterSpacing: "-0.02em", textAlign: "center", lineHeight: "105%", fontFamily: "Inter, system-ui, sans-serif" }}>
-          Free {item}
-        </span>
-        <span style={{ fontSize: 15, fontWeight: 500, color: tc.textBody, marginTop: 8, fontFamily: "Inter, system-ui, sans-serif" }}>
-          With any order over ${minOrd}
-        </span>
-
-        {/* Divider */}
-        <div style={{ width: 90, height: 1, background: tc.dividerColor, margin: "16px 0" }} />
-
-        <span style={{ fontSize: 13, fontWeight: 400, color: tc.textBody, lineHeight: "150%", textAlign: "center", fontFamily: "Inter, system-ui, sans-serif", opacity: 0.7 }}>
-          {fields.details?.trim() || "Available on all orders. No code needed."}
-        </span>
-
-        <div style={{ flex: 1, minHeight: 12 }} />
-
-        {/* QR + URL */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 8 }}>
-            <QRCodeSVG value={toQrUrl(url)} size={76} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+      {/* Photo — 360×231, top:74, left:20 */}
+      <div
+        onClick={onPhotoClick}
+        style={{ position: "absolute", top: 74, left: 20, width: 360, height: 231, background: tc.photoBg, overflow: "hidden", cursor: onPhotoClick ? "pointer" : "default" }}
+      >
+        {photo ? (
+          <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : onPhotoClick ? (
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 5, background: tc.dark ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.6)", border: `1px dashed ${tc.dark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.18)"}`, borderRadius: 8, padding: "10px 14px", whiteSpace: "nowrap" }}>
+            <Icon name="add_photo_alternate" size={16} color={tc.dark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)"} />
+            <span style={{ fontSize: 9, fontFamily: "Inter, system-ui, sans-serif", color: tc.dark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)" }}>Add photo</span>
           </div>
-          <span style={{ fontSize: 13, fontWeight: 400, color: tc.textBody, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.6 }}>{url}</span>
+        ) : null}
+      </div>
+
+      {/* Content row — top:329, left:20, width:360 */}
+      <div style={{ position: "absolute", top: 329, left: 20, width: 360, display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 32 }}>
+
+        {/* Left: headline + promo + terms */}
+        <div style={{ width: 228, flexShrink: 0, display: "flex", flexDirection: "column", gap: 18 }}>
+          <span style={{ fontSize: 28, fontWeight: 700, color: tc.textPrimary, lineHeight: "100%", letterSpacing: "-0.02em", fontFamily: "Inter, system-ui, sans-serif", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}>
+            {headline}
+          </span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {promo && (
+              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0 12px", height: 32, background: pillBg, borderRadius: 6 }}>
+                <span style={{ fontSize: 12, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif", textAlign: "center", whiteSpace: "nowrap" }}>
+                  Promo code <strong>{promo}</strong>
+                </span>
+              </div>
+            )}
+            {terms && (
+              <span style={{ fontSize: 9, fontWeight: 400, color: tc.textBody, fontFamily: "Inter, system-ui, sans-serif", lineHeight: "150%" }}>
+                {terms}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Right: QR code */}
+        <div style={{ width: 100, height: 100, background: "#FFFFFF", borderRadius: 8, padding: 6, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <QRCodeSVG value={toQrUrl(url)} size={88} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
         </div>
       </div>
     </div>
@@ -783,7 +794,7 @@ function FreeItemLivePreview({ fields, themeId, logo, photo }: PreviewProps) {
 
 function EditorPreview({ templateId, fields, themeId, logo, photo, onFieldChange, onPhotoClick, onLogoClick }: { templateId: string; fields: Record<string, string>; themeId: string; logo?: string | null; photo?: string | null; onFieldChange?: (id: string, value: string) => void; onPhotoClick?: () => void; onLogoClick?: () => void }) {
   if (templateId === "discount") return <DiscountLivePreview fields={fields} themeId={themeId} logo={logo} photo={photo} />;
-  if (templateId === "freeItem")  return <FreeItemLivePreview  fields={fields} themeId={themeId} logo={logo} photo={photo} />;
+  if (templateId === "freeItem")  return <FreeItemLivePreview  fields={fields} themeId={themeId} logo={logo} photo={photo} onPhotoClick={onPhotoClick} onLogoClick={onLogoClick} />;
   return <MenuPricesLivePreview fields={fields} themeId={themeId} logo={logo} photo={photo} onFieldChange={onFieldChange} onPhotoClick={onPhotoClick} onLogoClick={onLogoClick} />;
 }
 
@@ -1198,26 +1209,37 @@ function DiscountFlyerPreview({ account }: { account: AccountData }) {
 }
 
 function FreeItemFlyerPreview({ account }: { account: AccountData }) {
-  // Thumbnail: photo hero top, "Free [item]" below on mint bg
-  const bg = "#EEFCF3";
-  const textColor = "#0A0A0A";
-  const photoUrl = PRESET_FOOD_PHOTOS[0].url.replace("w=400&h=566", "w=260&h=140");
+  const bg   = "#ECFDF5";
+  const url  = account.orderUrl || "yourbusiness.com/order";
+  const photoUrl = PRESET_FOOD_PHOTOS[0].url.replace("w=400&h=566", "w=234&h=150");
   return (
-    <div style={{ width: 260, height: 368, background: "#FFFFFF", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-      {/* Photo hero */}
-      <div style={{ width: 260, height: 140, flexShrink: 0, overflow: "hidden", position: "relative" }}>
-        <img src={photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: "linear-gradient(to top, rgba(0,0,0,0.4), transparent)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: 8, left: 12, background: bg, borderRadius: 5, padding: "3px 8px" }}>
-          <span style={{ fontSize: 7, fontWeight: 700, color: textColor, letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "Inter, system-ui, sans-serif" }}>Free with your order</span>
+    <div style={{ width: 260, height: 336, background: bg, position: "relative", overflow: "hidden" }}>
+      {/* Logo */}
+      <div style={{ position: "absolute", top: 13, left: 13, display: "flex", alignItems: "center", gap: 6 }}>
+        <div style={{ width: 12, height: 12, position: "relative", flexShrink: 0 }}>
+          <div style={{ position: "absolute", width: 8.5, height: 8.5, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", width: 8.5, height: 8.5, left: 3.5, top: 3.5, background: "#ABE571", borderRadius: "50%" }} />
+          <div style={{ position: "absolute", width: 5.1, height: 5.1, left: 3.4, top: 3.4, background: "#008062", borderRadius: "50%" }} />
         </div>
+        <span style={{ fontSize: 7.6, fontWeight: 600, color: "#0A0A0A", fontFamily: "Inter, system-ui, sans-serif" }}>{account.businessName}</span>
       </div>
-      {/* Content */}
-      <div style={{ flex: 1, background: bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "12px 16px", gap: 6 }}>
-        <span style={{ fontSize: 24, fontWeight: 800, color: textColor, letterSpacing: "-0.02em", textAlign: "center", lineHeight: "105%", fontFamily: "Inter, system-ui, sans-serif" }}>
-          Free {account.signatureDish}
-        </span>
-        <span style={{ fontSize: 9, fontWeight: 400, color: textColor, fontFamily: "Inter, system-ui, sans-serif", opacity: 0.5 }}>With any order over $25</span>
+      {/* Photo */}
+      <div style={{ position: "absolute", top: 48, left: 13, width: 234, height: 150, background: "#C8F5D8", overflow: "hidden" }}>
+        <img src={photoUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+      {/* Content row */}
+      <div style={{ position: "absolute", top: 214, left: 13, width: 234, display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 20 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 11 }}>
+          <span style={{ fontSize: 18, fontWeight: 700, color: "#0A0A0A", lineHeight: "100%", letterSpacing: "-0.02em", fontFamily: "Inter, system-ui, sans-serif", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" } as React.CSSProperties}>
+            Get free garlic knots on orders over $20
+          </span>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0 8px", height: 21, background: "#34D399", borderRadius: 4 }}>
+            <span style={{ fontSize: 7.8, fontWeight: 400, color: "#0A0A0A", fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>Promo code <strong>OFF20</strong></span>
+          </div>
+        </div>
+        <div style={{ width: 65, height: 65, background: "#FFFFFF", borderRadius: 5, padding: 4, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <QRCodeSVG value={toQrUrl(url)} size={57} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+        </div>
       </div>
     </div>
   );
@@ -1256,7 +1278,9 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       label: "Free Item or Delivery",
       description: "Give away a free item or free delivery to drive first orders.",
       flyerThemes: FLYER_THEMES,
-      defaultTheme: "ocean",
+      defaultTheme: "shipday",
+      flyerHeight: 517,
+      templateDefaults: { headline: "Get free garlic knots on orders over $20", details: "OFF20", termsText: "T&Cs apply. Offer ends 30.05.26" },
     },
   ];
 }
