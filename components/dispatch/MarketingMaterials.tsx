@@ -580,27 +580,39 @@ function MenuPricesLivePreview({ fields, themeId, logo, photo, onFieldChange, on
   );
 }
 
-const DISCOUNT_PILL_BG: Record<string, string> = {
-  purple:  "#A78BFA",
-  red:     "#F87171",
-  orange:  "#FB923C",
-  yellow:  "#FACC15",
-  navy:    "#22D3EE",
-  slate:   "#60A5FA",
-  shipday: "#34D399",
-  rose:    "#F472B6",
-  mint:    "#6AEBBE",
-  teal:    "#2DD4BF",
-};
+function getContrastRatio(hexA: string, hexB: string): number {
+  const lum = (hex: string) => {
+    const rgb = parseInt(hex.replace("#", ""), 16);
+    const r = ((rgb >> 16) & 0xff) / 255;
+    const g = ((rgb >> 8)  & 0xff) / 255;
+    const b = (rgb & 0xff) / 255;
+    const lin = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  };
+  const [l1, l2] = [lum(hexA), lum(hexB)].sort((a, b) => b - a);
+  return (l1 + 0.05) / (l2 + 0.05);
+}
+
+const FLYER_THEMES = [
+  { id: "classic",  label: "Classic",  bg: "#FFFFFF", pill: "#000000", text: "#000000", pillText: "#FFFFFF" },
+  { id: "shipday",  label: "Shipday",  bg: "#ECFDF5", pill: "#34D399", text: "#064E3B", pillText: "#000000" },
+  { id: "ocean",    label: "Ocean",    bg: "#CFFAFE", pill: "#22D3EE", text: "#164E63", pillText: "#000000" },
+  { id: "royal",    label: "Royal",    bg: "#DBEAFE", pill: "#3B82F6", text: "#1E3A8A", pillText: "#FFFFFF" },
+  { id: "violet",   label: "Violet",   bg: "#EDE9FE", pill: "#8B5CF6", text: "#4C1D95", pillText: "#FFFFFF" },
+  { id: "rose",     label: "Rose",     bg: "#FCE7F3", pill: "#EC4899", text: "#831843", pillText: "#FFFFFF" },
+  { id: "crimson",  label: "Crimson",  bg: "#FEE2E2", pill: "#EF4444", text: "#7F1D1D", pillText: "#FFFFFF" },
+  { id: "rust",     label: "Rust",     bg: "#FFEDD5", pill: "#FB923C", text: "#7C2D12", pillText: "#000000" },
+  { id: "amber",    label: "Amber",    bg: "#FEF3C7", pill: "#FCD34D", text: "#78350F", pillText: "#000000" },
+  { id: "stone",    label: "Stone",    bg: "#292524", pill: "#E7E5E4", text: "#F5F5F4", pillText: "#000000" },
+  { id: "charcoal", label: "Charcoal", bg: "#1F2937", pill: "#F3F4F6", text: "#F9FAFB", pillText: "#000000" },
+] as const;
 
 function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
   const FLYER_H   = 517;
   const HEADER_H  = 264;
   const PICTURE_H = 253;
 
-  const tc       = MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint;
-  const pillBg   = DISCOUNT_PILL_BG[themeId]   ?? "#6AEBBE";
-  const pillText = tc.dark ? "#FFFFFF" : "#0A0A0A";
+  const ft = (FLYER_THEMES as readonly FlyerTheme[]).find(t => t.id === themeId) ?? FLYER_THEMES[0];
 
   const name      = fields.businessName?.trim() || "";
   const headline  = fields.headline?.trim()     || "15% Off your next order";
@@ -609,7 +621,7 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
   const url       = fields.orderUrl?.trim()     || "yourbusiness.com/order";
 
   return (
-    <div style={{ width: 400, height: FLYER_H, background: tc.bg, position: "relative", overflow: "hidden" }}>
+    <div style={{ width: 400, height: FLYER_H, background: ft.bg, position: "relative", overflow: "hidden" }}>
 
       {/* Header */}
       <div style={{
@@ -625,7 +637,7 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
             <div style={{ position: "absolute", width: 7.71, height: 7.71, left: 5.14, top: 5.12, background: "#008062", borderRadius: "50%" }} />
           </div>
           {name && (
-            <span style={{ fontSize: 11.76, fontWeight: 600, color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif" }}>{name}</span>
+            <span style={{ fontSize: 11.76, fontWeight: 600, color: ft.text, fontFamily: "Inter, system-ui, sans-serif" }}>{name}</span>
           )}
         </div>
 
@@ -636,7 +648,7 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
               display: "block",
               fontSize: 28, fontWeight: 700, lineHeight: "110%",
               textAlign: "center", letterSpacing: "-0.02em",
-              color: tc.textPrimary, fontFamily: "Inter, system-ui, sans-serif",
+              color: ft.text, fontFamily: "Inter, system-ui, sans-serif",
               wordBreak: "break-word",
             }}>
               {headline}
@@ -648,21 +660,21 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
             {promoCode && (
               <div style={{
                 display: "inline-flex", flexDirection: "row", alignItems: "center",
-                padding: "0 14px", gap: 6, background: pillBg, borderRadius: 6, height: 32,
+                padding: "0 14px", gap: 6, background: ft.pill, borderRadius: 6, height: 32,
               }}>
-                <span style={{ fontSize: 12, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 400, color: ft.pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
                   Promo code
                 </span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: ft.pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
                   {promoCode}
                 </span>
               </div>
             )}
             {terms && (
               <span style={{
-                fontSize: 11, fontWeight: 400, color: tc.textBody,
+                fontSize: 11, fontWeight: 400, color: ft.text,
                 fontFamily: "Inter, system-ui, sans-serif", lineHeight: "150%",
-                textAlign: "center",
+                textAlign: "center", opacity: 0.7,
               }}>{terms}</span>
             )}
           </div>
@@ -762,7 +774,8 @@ function EditorPreview({ templateId, fields, themeId, logo, photo, onFieldChange
    FLYER EDITOR MODAL
 ══════════════════════════════════════════════ */
 
-type FlyerTemplate = { id: string; label: string; description: string; badge?: string; preview: React.ReactNode; previewBg: string; previewOffsetY?: number; colorVariants?: string[]; defaultTheme?: string; flyerHeight?: number; templateDefaults?: Record<string, string> };
+type FlyerTheme = typeof FLYER_THEMES[number];
+type FlyerTemplate = { id: string; label: string; description: string; badge?: string; preview: React.ReactNode; previewBg: string; previewOffsetY?: number; colorVariants?: string[]; defaultTheme?: string; flyerHeight?: number; templateDefaults?: Record<string, string>; flyerThemes?: readonly FlyerTheme[] };
 
 type SavedFlyer = {
   id: number;
@@ -796,7 +809,13 @@ function FlyerEditorModal({
   const bizFields   = fieldDefs.filter(f => BIZ_FIELD_IDS.has(f.id));
   const offerFields = fieldDefs.filter(f => !BIZ_FIELD_IDS.has(f.id));
   const [fields,             setFields]            = useState<Record<string, string>>({ ...(template.templateDefaults ?? {}), ...(initialFields ?? {}) });
-  const [colorTheme,         setColorTheme]        = useState(initialTheme ?? template.defaultTheme ?? "shipday");
+  const [colorTheme, setColorTheme] = useState(() => {
+    const raw = initialTheme ?? template.defaultTheme ?? "shipday";
+    if (template.flyerThemes && !template.flyerThemes.find(ft => ft.id === raw)) {
+      return template.defaultTheme ?? "classic";
+    }
+    return raw;
+  });
   const [exportSize, setExportSize] = useState(initialExportSize ?? "print");
   const [downloading,        setDownloading]       = useState(false);
   const [logo,               setLogo]              = useState<string | null>(null);
@@ -932,12 +951,36 @@ function FlyerEditorModal({
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 500, color: t.text }}>Color</span>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-                {availableThemes.map(ct => {
-                  const sel = colorTheme === ct.id;
-                  return (
-                    <div key={ct.id} onClick={() => setColorTheme(ct.id)} title={ct.label} style={{ width: 26, height: 26, borderRadius: 99, background: ct.dark, cursor: "pointer", flexShrink: 0, boxShadow: sel ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}` : `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px transparent`, transition: "box-shadow 150ms ease" }} />
-                  );
-                })}
+                {template.flyerThemes ? (
+                  template.flyerThemes.map(ft => {
+                    const sel = colorTheme === ft.id;
+                    const isNearWhite = ft.id === "stone" || ft.id === "charcoal";
+                    return (
+                      <div
+                        key={ft.id}
+                        onClick={() => setColorTheme(ft.id)}
+                        title={ft.label}
+                        style={{
+                          width: 26, height: 26, borderRadius: 99,
+                          background: ft.pill,
+                          border: isNearWhite ? "0.5px solid #D1D5DB" : "none",
+                          cursor: "pointer", flexShrink: 0,
+                          boxShadow: sel
+                            ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}`
+                            : `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px transparent`,
+                          transition: "box-shadow 150ms ease",
+                        }}
+                      />
+                    );
+                  })
+                ) : (
+                  availableThemes.map(ct => {
+                    const sel = colorTheme === ct.id;
+                    return (
+                      <div key={ct.id} onClick={() => setColorTheme(ct.id)} title={ct.label} style={{ width: 26, height: 26, borderRadius: 99, background: ct.dark, cursor: "pointer", flexShrink: 0, boxShadow: sel ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}` : `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px transparent`, transition: "box-shadow 150ms ease" }} />
+                    );
+                  })
+                )}
               </div>
             </div>
 
@@ -1184,9 +1227,9 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       previewBg: "#FFFFFF",
       label: "% Off Discount",
       description: "Offer a percentage discount on their next direct order.",
-      colorVariants: ["purple", "red", "orange", "yellow", "navy", "slate", "shipday", "rose"],
-      defaultTheme: "purple",
+      defaultTheme: "classic",
       flyerHeight: 517,
+      flyerThemes: FLYER_THEMES,
       templateDefaults: { headline: "15% Off your next order", details: "DIRECT15", termsText: "T&Cs apply · Valid until Dec 31, 2024" },
     },
     {
