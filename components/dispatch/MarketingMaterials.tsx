@@ -1274,7 +1274,7 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       label: "Free Item or Delivery",
       description: "Give away a free item or free delivery to drive first orders.",
       flyerThemes: FLYER_THEMES,
-      defaultTheme: "shipday",
+      defaultTheme: "royal",
       flyerHeight: 566,
       templateDefaults: { headline: "Get free garlic knots on orders over $20", details: "OFF20", termsText: "T&Cs apply. Offer ends 30.05.26" },
     },
