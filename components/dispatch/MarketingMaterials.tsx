@@ -488,7 +488,8 @@ const MENU_PRICES_THEMES: Record<string, { bg: string; textPrimary: string; text
 };
 
 function MenuPricesLivePreview({ fields, themeId, logo, photo, onFieldChange, onPhotoClick, onLogoClick }: PreviewProps) {
-  const tc           = MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint;
+  const flyerTheme  = FLYER_THEMES.find(ft => ft.id === themeId);
+  const tc          = flyerTheme ? flyerThemeToTokens(flyerTheme) : (MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint);
   const { bg, textPrimary, textBody, taglineBg, dividerColor, photoBg } = tc;
   const isDark       = tc.dark;
   const editHoverBg  = isDark ? "rgba(255,255,255,0.08)" : "rgba(1,173,133,0.08)";
@@ -607,6 +608,21 @@ const FLYER_THEMES = [
   { id: "charcoal", label: "Charcoal", bg: "#1F2937", pill: "#F3F4F6", text: "#F9FAFB", pillText: "#000000" },
 ] as const;
 
+function flyerThemeToTokens(ft: (typeof FLYER_THEMES)[number]) {
+  const isDark = ft.id === "stone" || ft.id === "charcoal";
+  return {
+    bg:           ft.bg,
+    textPrimary:  ft.text,
+    textBody:     isDark ? "rgba(255,255,255,0.85)" : "#262626",
+    taglineBg:    ft.bg,
+    dividerColor: isDark ? "#444444" : `${ft.pill}99`,
+    photoBg:      isDark
+      ? `linear-gradient(180deg, ${ft.bg}CC 0%, #0A0A0A 100%)`
+      : `linear-gradient(180deg, ${ft.pill}55 0%, ${ft.pill}CC 100%)`,
+    dark: isDark,
+  };
+}
+
 function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
   const FLYER_H   = 517;
   const HEADER_H  = 264;
@@ -708,7 +724,8 @@ function DiscountLivePreview({ fields, themeId, photo }: PreviewProps) {
 }
 
 function FreeItemLivePreview({ fields, themeId, logo, photo }: PreviewProps) {
-  const tc     = MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint;
+  const flyerTheme = FLYER_THEMES.find(ft => ft.id === themeId);
+  const tc         = flyerTheme ? flyerThemeToTokens(flyerTheme) : (MENU_PRICES_THEMES[themeId] ?? MENU_PRICES_THEMES.mint);
   const name   = fields.businessName?.trim()  || "Your Business";
   const item   = fields.freeItem?.trim()       || "Garlic Knots";
   const minOrd = fields.minimumOrder?.trim()   || "25";
@@ -1218,8 +1235,8 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       previewBg: "#FFFFFF",
       label: "Store Menu Prices",
       description: "Show customers they pay your real prices — save $5–$15 vs. 3rd party.",
-      colorVariants: ["mint", "shipday", "teal", "purple", "rose", "navy", "slate"],
-      defaultTheme: "mint",
+      flyerThemes: FLYER_THEMES,
+      defaultTheme: "shipday",
     },
     {
       id: "discount",
@@ -1238,8 +1255,8 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       previewBg: "#FFFFFF",
       label: "Free Item or Delivery",
       description: "Give away a free item or free delivery to drive first orders.",
-      colorVariants: ["mint", "shipday", "teal", "purple", "rose", "navy", "slate"],
-      defaultTheme: "teal",
+      flyerThemes: FLYER_THEMES,
+      defaultTheme: "ocean",
     },
   ];
 }
