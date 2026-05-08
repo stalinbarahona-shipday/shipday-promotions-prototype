@@ -727,12 +727,12 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
 
   const name     = fields.businessName?.trim() || "Your Business";
   const headline = fields.headline?.trim()     || "Get free garlic knots on orders over $20";
-  const promo    = fields.details?.trim();
-  const terms    = fields.termsText?.trim();
+  const promo    = fields.details?.trim()      || "OFF20";
+  const terms    = fields.termsText?.trim()    || "T&Cs apply. Offer ends 30.05.26";
   const url      = fields.orderUrl?.trim()     || "yourbusiness.com/order";
 
   return (
-    <div style={{ width: 400, height: 517, background: tc.bg, position: "relative", overflow: "hidden" }}>
+    <div style={{ width: 400, height: 566, background: tc.bg, position: "relative", overflow: "hidden" }}>
 
       {/* Logo — top:20, left:20 */}
       <div style={{ position: "absolute", top: 20, left: 20, display: "flex", flexDirection: "row", alignItems: "center", padding: "11px 8px", gap: 10, borderRadius: 8 }}>
@@ -744,10 +744,10 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
         </span>
       </div>
 
-      {/* Photo — 360×231, top:74, left:20 */}
+      {/* Photo — 360×280, top:74, left:20 (taller for A4 proportion) */}
       <div
         onClick={onPhotoClick}
-        style={{ position: "absolute", top: 74, left: 20, width: 360, height: 231, background: tc.photoBg, overflow: "hidden", cursor: onPhotoClick ? "pointer" : "default" }}
+        style={{ position: "absolute", top: 74, left: 20, width: 360, height: 280, background: tc.photoBg, overflow: "hidden", cursor: onPhotoClick ? "pointer" : "default" }}
       >
         {photo ? (
           <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -759,8 +759,8 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
         ) : null}
       </div>
 
-      {/* Content row — top:329, left:20, width:360 */}
-      <div style={{ position: "absolute", top: 329, left: 20, width: 360, display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 32 }}>
+      {/* Content row — top:378 (74+280+24), left:20, width:360 */}
+      <div style={{ position: "absolute", top: 378, left: 20, width: 360, display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 32 }}>
 
         {/* Left: headline + promo + terms */}
         <div style={{ width: 228, flexShrink: 0, display: "flex", flexDirection: "column", gap: 18 }}>
@@ -768,18 +768,14 @@ function FreeItemLivePreview({ fields, themeId, logo, photo, onPhotoClick, onLog
             {headline}
           </span>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {promo && (
-              <div style={{ display: "flex", justifyContent: "center", alignItems: "center", padding: "0 12px", height: 32, background: pillBg, borderRadius: 6 }}>
-                <span style={{ fontSize: 12, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif", textAlign: "center", whiteSpace: "nowrap" }}>
-                  Promo code <strong>{promo}</strong>
-                </span>
-              </div>
-            )}
-            {terms && (
-              <span style={{ fontSize: 9, fontWeight: 400, color: tc.textBody, fontFamily: "Inter, system-ui, sans-serif", lineHeight: "150%" }}>
-                {terms}
+            <div style={{ display: "inline-flex", alignItems: "center", padding: "0 12px", height: 32, background: pillBg, borderRadius: 6, alignSelf: "flex-start" }}>
+              <span style={{ fontSize: 12, fontWeight: 400, color: pillText, fontFamily: "Inter, system-ui, sans-serif", whiteSpace: "nowrap" }}>
+                Promo code <strong>{promo}</strong>
               </span>
-            )}
+            </div>
+            <span style={{ fontSize: 11, fontWeight: 400, color: tc.textBody, fontFamily: "Inter, system-ui, sans-serif", lineHeight: "150%" }}>
+              {terms}
+            </span>
           </div>
         </div>
 
@@ -1279,7 +1275,7 @@ function buildFlyerTemplates(account: AccountData): FlyerTemplate[] {
       description: "Give away a free item or free delivery to drive first orders.",
       flyerThemes: FLYER_THEMES,
       defaultTheme: "shipday",
-      flyerHeight: 517,
+      flyerHeight: 566,
       templateDefaults: { headline: "Get free garlic knots on orders over $20", details: "OFF20", termsText: "T&Cs apply. Offer ends 30.05.26" },
     },
   ];
