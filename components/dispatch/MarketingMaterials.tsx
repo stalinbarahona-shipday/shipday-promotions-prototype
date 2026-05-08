@@ -114,6 +114,7 @@ type AccountData = {
   signatureDish: string;
   deliveryAreas: string;
   orderUrl: string;
+  address?: string;
 };
 
 function themeBackground(theme: typeof colorThemes[0]) {
@@ -243,6 +244,160 @@ function ExtractionView({ onComplete }: { onComplete: () => void }) {
   );
 }
 
+/* ── Relative time helper ─────────────────────── */
+function relativeTime(date: Date): string {
+  const diffMs  = Date.now() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60_000);
+  if (diffMin < 2)  return "just now";
+  if (diffMin < 60) return `${diffMin} minutes ago`;
+  const diffHr = Math.floor(diffMin / 60);
+  if (diffHr < 24)  return diffHr === 1 ? "1 hour ago" : `${diffHr} hours ago`;
+  const diffDay = Math.floor(diffHr / 24);
+  if (diffDay === 1) return "yesterday";
+  return `${diffDay} days ago`;
+}
+
+/* ── Google Business Profile info modal ─────────── */
+function GBProfileModal({ account, onClose, onDisconnect, onResync, hasManualEdits, lastSyncedAt }: {
+  account: AccountData;
+  onClose: () => void;
+  onDisconnect?: () => void;
+  onResync?: () => void;
+  hasManualEdits?: boolean;
+  lastSyncedAt?: Date | null;
+}) {
+  const t = useTheme();
+  const [hoursExpanded, setHoursExpanded] = useState(false);
+  const [resyncConfirm, setResyncConfirm] = useState(false);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [onClose]);
+
+  const category = account.tagline.split(" · ")[0] || "Restaurant";
+
+  const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const mockHours = weekdays.map((d, i) => ({ day: d, hours: i < 5 ? "09:00 a.m. – 09:00 p.m." : i === 5 ? "10:00 a.m. – 08:00 p.m." : "Closed" }));
+
+  const infoRows: { icon: string; label: string; value: React.ReactNode; expandable?: boolean }[] = [
+    { icon: "restaurant_menu", label: "Category", value: category },
+    { icon: "payments",        label: "Payments",  value: "Cash, Credit card, Debit card" },
+    {
+      icon: "schedule", label: "Hours",
+      expandable: true,
+      value: (
+        <span>Open today · {mockHours[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1]?.hours ?? "09:00 a.m. – 09:00 p.m."}</span>
+      ),
+    },
+  ];
+  if (account.googleRating) {
+    infoRows.splice(2, 0, { icon: "star", label: "Rating", value: `${account.googleRating} ★ (${account.reviewCount} reviews)` });
+  }
+
+  const handleResync = () => {
+    if (hasManualEdits) { setResyncConfirm(true); } else { onResync?.(); }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 900, display: "flex", alignItems: "center", justifyContent: "center", background: t.overlayBg }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 560, background: t.surface, borderRadius: 20, boxShadow: "0px 24px 80px rgba(0,0,0,0.22)", overflow: "hidden", display: "flex", flexDirection: "column", transition: "background 200ms ease" }}>
+
+        {/* Header */}
+        <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", padding: "24px 24px 20px" }}>
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, marginBottom: 2 }}>Google Business Profile</div>
+            <div style={{ fontSize: 14, color: t.textMuted }}>Data synced from Google</div>
+          </div>
+          <button onClick={onClose} style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", background: t.bgSecondary, border: "none", borderRadius: 99, cursor: "pointer", flexShrink: 0 }}>
+            <Icon name="close" size={20} color={t.textMuted} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+
+          {/* Business header card */}
+          <div style={{ border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 20px", background: t.surface, display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ width: 56, height: 56, borderRadius: 14, background: t.accentLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Icon name="storefront" size={28} color={t.accent} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: t.text, letterSpacing: "-0.01em", marginBottom: 3 }}>{account.businessName}</div>
+              {account.address && <div style={{ fontSize: 13, color: t.textMuted }}>{account.address}</div>}
+              {lastSyncedAt && (
+                <div style={{ fontSize: 12, color: t.textMuted, marginTop: 4 }}>Last synced: {relativeTime(lastSyncedAt)}</div>
+              )}
+            </div>
+          </div>
+
+          {/* Info rows card */}
+          <div style={{ border: `1px solid ${t.border}`, borderRadius: 16, overflow: "hidden", background: t.surface }}>
+            {infoRows.map((row, idx) => (
+              <div key={row.label}>
+                {idx > 0 && <div style={{ height: 1, background: t.border, marginLeft: 20 }} />}
+                <div
+                  onClick={row.expandable ? () => setHoursExpanded(x => !x) : undefined}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 20px", cursor: row.expandable ? "pointer" : "default" }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, background: t.bgSecondary, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                    <Icon name={row.icon} size={18} color={t.textMuted} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: t.textMuted, marginBottom: 2 }}>{row.label}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: t.text }}>{row.value}</div>
+                    {row.expandable && hoursExpanded && (
+                      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
+                        {mockHours.map(h => (
+                          <div key={h.day} style={{ display: "flex", justifyContent: "space-between", gap: 16 }}>
+                            <span style={{ fontSize: 13, color: t.textMuted, minWidth: 90 }}>{h.day}</span>
+                            <span style={{ fontSize: 13, color: h.hours === "Closed" ? t.textMuted : t.text, fontWeight: h.hours === "Closed" ? 400 : 500 }}>{h.hours}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {row.expandable && (
+                    <Icon name={hoursExpanded ? "expand_less" : "expand_more"} size={20} color={t.textMuted} />
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Re-sync from Google */}
+          {resyncConfirm ? (
+            <div style={{ border: `1px solid ${t.border}`, borderRadius: 14, padding: "16px 20px", background: t.surface }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: t.text, marginBottom: 6 }}>Replace your edits?</div>
+              <div style={{ fontSize: 13, color: t.textMuted, lineHeight: "140%", marginBottom: 14 }}>Re-syncing will replace your edits with the latest Google data. Continue?</div>
+              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <button onClick={() => setResyncConfirm(false)} style={{ padding: "7px 16px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 500, color: t.text }}>Cancel</button>
+                <button onClick={() => { setResyncConfirm(false); onResync?.(); onClose(); }} style={{ padding: "7px 16px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 600, color: "#FFFFFF" }}>Re-sync</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ border: `1px solid ${t.border}`, borderRadius: 14, overflow: "hidden" }}>
+              <button onClick={handleResync} style={{ width: "100%", padding: "14px 20px", background: t.surface, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "inherit", transition: "background 150ms ease" }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = t.bgSecondary}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = t.surface}>
+                <Icon name="sync" size={16} color={t.accent} />
+                <span style={{ fontSize: 15, fontWeight: 600, color: t.text }}>Re-sync from Google</span>
+              </button>
+            </div>
+          )}
+
+          {/* Disconnect link */}
+          {onDisconnect && (
+            <button onClick={onDisconnect} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, color: t.textMuted, textDecoration: "underline", textUnderlineOffset: 2, padding: "4px 0", alignSelf: "center" }}>
+              Disconnect Google Business Profile
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function GoogleBusinessModal({ onConnect, onClose }: { onConnect: (data: AccountData) => void; onClose: () => void }) {
   const t = useTheme();
   const [query, setQuery]         = useState("");
@@ -274,7 +429,7 @@ function GoogleBusinessModal({ onConnect, onClose }: { onConnect: (data: Account
 
   const handlePick = (biz: AccountData & { _address?: string }) => {
     const { _address, ...data } = biz;
-    onConnect(data);
+    onConnect({ ...data, address: _address });
   };
 
   const canSearch = query.trim().length > 0 && !extracting;
@@ -601,11 +756,10 @@ const FLYER_THEMES = [
   { id: "rust",     label: "Rust",     bg: "#FFEDD5", pill: "#FB923C", text: "#0A0A0A", pillText: "#000000" },
   { id: "amber",    label: "Amber",    bg: "#FEF3C7", pill: "#FCD34D", text: "#0A0A0A", pillText: "#000000" },
   { id: "stone",    label: "Stone",    bg: "#292524", pill: "#E7E5E4", text: "#F5F5F4", pillText: "#000000" },
-  { id: "charcoal", label: "Charcoal", bg: "#1F2937", pill: "#F3F4F6", text: "#F9FAFB", pillText: "#000000" },
 ] as const;
 
 function flyerThemeToTokens(ft: (typeof FLYER_THEMES)[number]) {
-  const isDark = ft.id === "stone" || ft.id === "charcoal";
+  const isDark = ft.id === "stone";
   return {
     bg:           ft.bg,
     textPrimary:  ft.text,
@@ -859,28 +1013,48 @@ function ManualBizCard({ fields, logo, onFieldChange, onLogoClick }: { fields: R
 }
 
 /* ── Business info card (all 3 states) ───────────── */
-function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, isConnected, accountData, onShowConnect }: {
+function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, onLogoReset, isConnected, accountData, onShowConnect, onManageConnection }: {
   fields: Record<string, string>;
   logo: string | null;
   onFieldChange: (id: string, v: string) => void;
   onLogoClick: () => void;
+  onLogoReset?: () => void;
   isConnected: boolean;
   accountData?: AccountData;
   onShowConnect?: () => void;
+  onManageConnection?: () => void;
 }) {
   const t = useTheme();
   const [expanded, setExpanded] = useState(false);
+  const [promptDismissed, setPromptDismissed] = useState(false);
+  const [resyncConfirm, setResyncConfirm] = useState(false);
 
   if (!isConnected) return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(37,99,235,0.07)", border: "1px solid rgba(37,99,235,0.18)", borderRadius: 10 }}>
-        <Icon name="link" size={15} color="#2563EB" />
-        <span style={{ flex: 1, fontFamily: EDITOR_FONT, fontSize: 13, color: t.text, lineHeight: "140%" }}>Connect Google Business Profile to auto-fill this info</span>
-        <button onClick={onShowConnect} style={{ flexShrink: 0, padding: "5px 12px", background: t.accent, border: "none", borderRadius: 7, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Connect</button>
-      </div>
+      {!promptDismissed && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", background: "rgba(37,99,235,0.07)", border: "1px solid rgba(37,99,235,0.18)", borderRadius: 10 }}>
+          <Icon name="link" size={15} color="#2563EB" />
+          <span style={{ flex: 1, fontFamily: EDITOR_FONT, fontSize: 13, color: t.text, lineHeight: "140%" }}>Connect Google Business Profile to auto-fill this info</span>
+          <button onClick={onShowConnect} style={{ flexShrink: 0, padding: "5px 12px", background: t.accent, border: "none", borderRadius: 7, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Connect</button>
+          <button onClick={() => setPromptDismissed(true)} style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", width: 24, height: 24, background: "none", border: "none", cursor: "pointer", borderRadius: 6, padding: 0 }}>
+            <Icon name="close" size={14} color={t.textMuted} />
+          </button>
+        </div>
+      )}
       <ManualBizCard fields={fields} logo={logo} onFieldChange={onFieldChange} onLogoClick={onLogoClick} />
     </div>
   );
+
+  const hasManualEdits = (fields.businessName ?? "") !== (accountData?.businessName ?? "") || (fields.orderUrl ?? "") !== (accountData?.orderUrl ?? "");
+
+  const doResync = () => {
+    if (accountData) {
+      onFieldChange("businessName", accountData.businessName ?? "");
+      onFieldChange("orderUrl", accountData.orderUrl ?? "");
+    }
+    setResyncConfirm(false);
+    setExpanded(false);
+  };
 
   if (!expanded) return (
     <div onClick={() => setExpanded(true)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12, cursor: "pointer" }}
@@ -899,9 +1073,21 @@ function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, isConnecte
 
   // Expanded
   return (
-    <div style={{ background: t.bgSecondary, border: `1px solid ${t.accent}`, borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 12, overflow: "hidden", position: "relative" }}>
+      {/* Re-sync confirmation overlay */}
+      {resyncConfirm && (
+        <div style={{ position: "absolute", inset: 0, zIndex: 10, background: "rgba(0,0,0,0.45)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ margin: "0 16px", padding: "18px 18px 16px", background: t.surface, borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.18)", maxWidth: 280 }}>
+            <div style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 600 as const, color: t.text, marginBottom: 8 }}>Re-sync from Google?</div>
+            <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, color: t.textMuted, lineHeight: "140%", marginBottom: 16 }}>Re-syncing will replace your edits with the latest Google data. Continue?</div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setResyncConfirm(false)} style={{ padding: "6px 14px", background: t.bgSecondary, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.text }}>Cancel</button>
+              <button onClick={doResync} style={{ padding: "6px 14px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Re-sync</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div onClick={() => setExpanded(false)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", cursor: "pointer" }}>
-        <LogoOrAvatar logo={logo} size={36} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 700 as const, color: t.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{fields.businessName || "Your Business"}</span>
@@ -912,17 +1098,18 @@ function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, isConnecte
       </div>
       <div style={{ height: 1, background: t.border }} />
       <div style={{ padding: 14 }}>
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-          <div onClick={onLogoClick} style={{ cursor: "pointer", position: "relative", flexShrink: 0 }}>
-            <LogoOrAvatar logo={logo} size={44} />
-            <div style={{ position: "absolute", bottom: -2, right: -2, width: 18, height: 18, borderRadius: 99, background: t.surface, border: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Icon name="photo_camera" size={11} color={t.textMuted} />
-            </div>
-          </div>
-          <div>
-            <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.text, marginBottom: 2 }}>Logo</div>
-            <button onClick={onLogoClick} style={{ fontFamily: EDITOR_FONT, fontSize: 12, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Replace</button>
+        {/* Logo row */}
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, marginBottom: 8 }}>Logo</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <LogoOrAvatar logo={logo} size={40} />
+            <button onClick={onLogoClick} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Replace</button>
+            {logo && onLogoReset && (
+              <>
+                <span style={{ color: t.border, fontSize: 13, lineHeight: 1 }}>·</span>
+                <button onClick={onLogoReset} style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted, background: "none", border: "none", cursor: "pointer", padding: 0 }}>Use Google logo</button>
+              </>
+            )}
           </div>
         </div>
         {/* Business name */}
@@ -941,16 +1128,20 @@ function BusinessInfoCard({ fields, logo, onFieldChange, onLogoClick, isConnecte
         </div>
         {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => { if (accountData) { onFieldChange("businessName", accountData.businessName ?? ""); onFieldChange("orderUrl", accountData.orderUrl ?? ""); } setExpanded(false); }}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.textMuted }}>
-            <Icon name="sync" size={14} color={t.textMuted} />Re-sync from Google
+          <button
+            onClick={() => hasManualEdits ? setResyncConfirm(true) : doResync()}
+            style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500 as const, color: t.accent, padding: 0 }}>
+            <Icon name="sync" size={14} color={t.accent} />Re-sync from Google
           </button>
           <div style={{ flex: 1 }} />
           <button onClick={() => setExpanded(false)} style={{ padding: "6px 16px", background: t.accent, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 600 as const, color: "#FFFFFF" }}>Done</button>
         </div>
       </div>
       <div style={{ borderTop: `1px solid ${t.border}`, padding: "8px 14px" }}>
-        <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.textMuted }}>Synced from Google Business Profile · Edits update your flyer only</span>
+        <div style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.textMuted }}>Synced from Google Business Profile · Changes apply to all your flyers</div>
+        {onManageConnection && (
+          <button onClick={onManageConnection} style={{ fontFamily: EDITOR_FONT, fontSize: 11, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: "3px 0 0", display: "block" }}>Manage connection in Marketing Materials</button>
+        )}
       </div>
     </div>
   );
@@ -997,6 +1188,7 @@ function FlyerEditorModal({
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const flyerRef            = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(1);
+  const [showGooglePhotos, setShowGooglePhotos] = useState(false);
 
   useEffect(() => {
     const el = previewContainerRef.current;
@@ -1073,9 +1265,11 @@ function FlyerEditorModal({
               logo={logo}
               onFieldChange={setField}
               onLogoClick={() => logoRef.current?.click()}
+              onLogoReset={() => setLogo(null)}
               isConnected={isConnected}
               accountData={accountData}
               onShowConnect={onShowGBConnect}
+              onManageConnection={onShowGBConnect ?? onClose}
             />
 
             {/* Offer fields — only non-business fields */}
@@ -1088,20 +1282,20 @@ function FlyerEditorModal({
             {/* Color */}
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 500, color: t.text }}>Color</span>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+              <div style={{ display: "flex", flexWrap: "nowrap", gap: 10, alignItems: "center" }}>
                 {template.flyerThemes ? (
                   template.flyerThemes.map(ft => {
                     const sel = colorTheme === ft.id;
-                    const usesBg = ft.id === "stone" || ft.id === "charcoal" || ft.id === "classic";
+                    const usesBg = ft.id === "stone" || ft.id === "classic";
                     return (
                       <div
                         key={ft.id}
                         onClick={() => setColorTheme(ft.id)}
                         title={ft.label}
                         style={{
-                          width: 26, height: 26, borderRadius: 99,
+                          width: 24, height: 24, borderRadius: 99,
                           background: usesBg ? ft.bg : ft.pill,
-                          border: ft.id === "classic" ? "1.5px solid #D1D5DB" : (ft.id === "stone" || ft.id === "charcoal") ? "1.5px solid rgba(255,255,255,0.3)" : "none",
+                          border: ft.id === "classic" ? "1.5px solid #D1D5DB" : ft.id === "stone" ? "1.5px solid rgba(255,255,255,0.3)" : "none",
                           cursor: "pointer", flexShrink: 0,
                           boxShadow: sel
                             ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}`
@@ -1125,40 +1319,100 @@ function FlyerEditorModal({
             {/* Photo */}
             {(
               <>
+                {/* Google Photos modal */}
+                {showGooglePhotos && (
+                  <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setShowGooglePhotos(false)}>
+                    <div style={{ background: t.surface, borderRadius: 16, padding: 24, width: 400, maxHeight: "70vh", overflowY: "auto", boxShadow: "0 12px 48px rgba(0,0,0,0.22)" }} onClick={e => e.stopPropagation()}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                          <GoogleBadge />
+                          <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 600, color: t.text }}>Your Google photos</span>
+                        </div>
+                        <button onClick={() => setShowGooglePhotos(false)} style={{ width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center", background: t.bgSecondary, border: "none", borderRadius: 99, cursor: "pointer" }}>
+                          <Icon name="close" size={16} color={t.textMuted} />
+                        </button>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {PRESET_FOOD_PHOTOS.map(preset => {
+                          const isSelected = photo === preset.url;
+                          return (
+                            <div key={preset.id} onClick={() => { setPhoto(preset.url); setShowGooglePhotos(false); }} title={preset.label}
+                              style={{ width: 108, height: 144, borderRadius: 10, flexShrink: 0, cursor: "pointer", overflow: "hidden", border: `2px solid ${isSelected ? t.accent : "transparent"}`, boxShadow: isSelected ? `0 0 0 2px ${t.accentLight}` : "0 0 0 1px rgba(0,0,0,0.10)", transition: "border-color 150ms ease", position: "relative" }}>
+                              <img src={preset.url} alt={preset.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              {isSelected && <div style={{ position: "absolute", bottom: 5, right: 5, width: 16, height: 16, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={11} color="#FFFFFF" /></div>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
                 <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <span style={{ fontFamily: EDITOR_FONT, fontSize: 15, fontWeight: 500, color: t.text }}>Photo</span>
                   <input ref={photoRef} type="file" accept="image/*" hidden onChange={e => handleFileUpload(e, setPhoto)} />
-                  <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-                    <div onClick={() => setPhoto(null)} title="No photo" style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, border: `2px solid ${!photo ? t.accent : t.border}`, boxShadow: !photo ? `0 0 0 2px ${t.accentLight}` : "none", transition: "border-color 150ms ease, box-shadow 150ms ease" }}>
-                      <Icon name="hide_image" size={20} color={!photo ? t.accent : t.textMuted} />
-                      <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, fontWeight: 500, color: !photo ? t.accent : t.textMuted }}>None</span>
+
+                  {isConnected ? (
+                    /* Connected: Google photos + upload only */
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontFamily: EDITOR_FONT, fontSize: 13, fontWeight: 500, color: t.textMuted, display: "flex", alignItems: "center", gap: 5 }}>
+                          <GoogleBadge />Your photos from Google
+                        </span>
+                        <button onClick={() => setShowGooglePhotos(true)} style={{ fontFamily: EDITOR_FONT, fontSize: 12, color: t.accent, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+                          See all ({PRESET_FOOD_PHOTOS.length})
+                        </button>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+                        {PRESET_FOOD_PHOTOS.slice(0, 4).map(preset => {
+                          const isSelected = photo === preset.url;
+                          return (
+                            <div key={preset.id} onClick={() => setPhoto(preset.url)} title={preset.label}
+                              style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", overflow: "hidden", border: `2px solid ${isSelected ? t.accent : "transparent"}`, boxShadow: isSelected ? `0 0 0 2px ${t.accentLight}` : "0 0 0 1px rgba(0,0,0,0.10)", transition: "border-color 150ms ease, box-shadow 150ms ease", position: "relative" }}>
+                              <img src={preset.url} alt={preset.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              {isSelected && <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>}
+                            </div>
+                          );
+                        })}
+                        {photo && !PRESET_FOOD_PHOTOS.some(p => p.url === photo) && (
+                          <div style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: `2px solid ${t.accent}`, boxShadow: `0 0 0 2px ${t.accentLight}`, position: "relative" }}>
+                            <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>
+                          </div>
+                        )}
+                        <button onClick={() => photoRef.current?.click()} style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, border: `1.5px dashed ${t.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: EDITOR_FONT, transition: "border-color 150ms ease, background 150ms ease" }} title="Upload your own" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = t.accent; (e.currentTarget as HTMLElement).style.background = t.accentLight; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.background = t.bgSecondary; }}>
+                          <Icon name="upload" size={18} color={t.textMuted} />
+                          <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 500, color: t.textMuted, lineHeight: 1 }}>Upload</span>
+                        </button>
+                      </div>
                     </div>
-                    {PRESET_FOOD_PHOTOS.slice(0, 3).map(preset => {
-                      const isSelected = photo === preset.url;
-                      return (
-                        <div key={preset.id} onClick={() => setPhoto(preset.url)} title={preset.label} style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", overflow: "hidden", border: `2px solid ${isSelected ? t.accent : "transparent"}`, boxShadow: isSelected ? `0 0 0 2px ${t.accentLight}` : "0 0 0 1px rgba(0,0,0,0.10)", transition: "border-color 150ms ease, box-shadow 150ms ease", position: "relative" }}>
-                          <img src={preset.url} alt={preset.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                          {isSelected && <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>}
+                  ) : (
+                    /* Not connected: stock photos + upload only */
+                    <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+                      <div onClick={() => setPhoto(null)} title="No photo" style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, border: `2px solid ${!photo ? t.accent : t.border}`, boxShadow: !photo ? `0 0 0 2px ${t.accentLight}` : "none", transition: "border-color 150ms ease, box-shadow 150ms ease" }}>
+                        <Icon name="hide_image" size={20} color={!photo ? t.accent : t.textMuted} />
+                        <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, fontWeight: 500, color: !photo ? t.accent : t.textMuted }}>None</span>
+                      </div>
+                      {PRESET_FOOD_PHOTOS.slice(0, 3).map(preset => {
+                        const isSelected = photo === preset.url;
+                        return (
+                          <div key={preset.id} onClick={() => setPhoto(preset.url)} title={preset.label} style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", overflow: "hidden", border: `2px solid ${isSelected ? t.accent : "transparent"}`, boxShadow: isSelected ? `0 0 0 2px ${t.accentLight}` : "0 0 0 1px rgba(0,0,0,0.10)", transition: "border-color 150ms ease, box-shadow 150ms ease", position: "relative" }}>
+                            <img src={preset.url} alt={preset.label} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            {isSelected && <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>}
+                          </div>
+                        );
+                      })}
+                      {photo && !PRESET_FOOD_PHOTOS.some(p => p.url === photo) && (
+                        <div style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: `2px solid ${t.accent}`, boxShadow: `0 0 0 2px ${t.accentLight}`, position: "relative" }}>
+                          <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>
                         </div>
-                      );
-                    })}
-                    {photo && !PRESET_FOOD_PHOTOS.slice(0, 3).some(p => p.url === photo) && PRESET_FOOD_PHOTOS.some(p => p.url === photo) && (
-                      <div style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: `2px solid ${t.accent}`, boxShadow: `0 0 0 2px ${t.accentLight}`, position: "relative" }}>
-                        <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>
-                      </div>
-                    )}
-                    {photo && !PRESET_FOOD_PHOTOS.some(p => p.url === photo) && (
-                      <div style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, overflow: "hidden", border: `2px solid ${t.accent}`, boxShadow: `0 0 0 2px ${t.accentLight}`, position: "relative" }}>
-                        <img src={photo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        <div style={{ position: "absolute", bottom: 3, right: 3, width: 14, height: 14, borderRadius: 99, background: t.accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Icon name="check" size={10} color="#FFFFFF" /></div>
-                      </div>
-                    )}
-                    <button onClick={() => photoRef.current?.click()} style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, border: `1.5px dashed ${t.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: EDITOR_FONT, transition: "border-color 150ms ease, background 150ms ease" }} title="Upload your own" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = t.accent; (e.currentTarget as HTMLElement).style.background = t.accentLight; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.background = t.bgSecondary; }}>
-                      <Icon name="upload" size={18} color={t.textMuted} />
-                      <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 500, color: t.textMuted, lineHeight: 1 }}>Upload</span>
-                    </button>
-                  </div>
+                      )}
+                      <button onClick={() => photoRef.current?.click()} style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, border: `1.5px dashed ${t.border}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, fontFamily: EDITOR_FONT, transition: "border-color 150ms ease, background 150ms ease" }} title="Upload your own" onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = t.accent; (e.currentTarget as HTMLElement).style.background = t.accentLight; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.background = t.bgSecondary; }}>
+                        <Icon name="upload" size={18} color={t.textMuted} />
+                        <span style={{ fontFamily: EDITOR_FONT, fontSize: 14, fontWeight: 500, color: t.textMuted, lineHeight: 1 }}>Upload</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -1531,8 +1785,10 @@ const DEFAULT_ACCOUNT: AccountData = {
 function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, icon?: string) => void; initialAccount?: AccountData }) {
   const t = useTheme();
   const [account,      setAccount]      = useState<AccountData>(initialAccount ?? DEFAULT_ACCOUNT);
-  const [isConnected,  setIsConnected]  = useState(false);
-  const [showGBModal,  setShowGBModal]  = useState(false);
+  const [isConnected,   setIsConnected]   = useState(false);
+  const [showGBModal,   setShowGBModal]   = useState(false);
+  const [showGBProfile, setShowGBProfile] = useState(false);
+  const [lastSyncedAt,  setLastSyncedAt]  = useState<Date | null>(null);
   const [editorFlyer,  setEditorFlyer]  = useState<FlyerTemplate | null>(null);
   const [savedFlyers,  setSavedFlyers]  = useState<SavedFlyer[]>([]);
   const [editingFlyer, setEditingFlyer] = useState<SavedFlyer | null>(null);
@@ -1543,6 +1799,7 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
     setAccount(data);
     setIsConnected(true);
     setShowGBModal(false);
+    setLastSyncedAt(new Date());
     onToast(`Connected: ${data.businessName}`, "check_circle");
   }, [onToast]);
 
@@ -1590,10 +1847,15 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
 
           {isConnected ? (
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 24, marginTop: 4 }}>
-              <div style={{ width: 22, height: 22, borderRadius: 99, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon name="check" size={14} color="#16A34A" />
-              </div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: t.text }}>{account.businessName}</span>
+              <button
+                onClick={() => setShowGBProfile(true)}
+                style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "inherit" }}
+              >
+                <div style={{ width: 22, height: 22, borderRadius: 99, background: "#DCFCE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <Icon name="check" size={14} color="#16A34A" />
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 600, color: t.text, textDecoration: "underline", textUnderlineOffset: 2 }}>{account.businessName}</span>
+              </button>
               <button
                 onClick={() => setShowGBModal(true)}
                 style={{ fontSize: 13, fontWeight: 500, color: t.textMuted, background: "none", border: "none", cursor: "pointer", padding: "2px 4px", fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 2 }}
@@ -1624,6 +1886,17 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
           ))}
         </div>
       </div>
+
+      {showGBProfile && (
+        <GBProfileModal
+          account={account}
+          onClose={() => setShowGBProfile(false)}
+          onDisconnect={() => { setIsConnected(false); setAccount(DEFAULT_ACCOUNT); setLastSyncedAt(null); setShowGBProfile(false); onToast("Disconnected from Google Business Profile"); }}
+          onResync={() => { setLastSyncedAt(new Date()); setShowGBProfile(false); onToast("Re-synced from Google Business Profile", "sync"); }}
+          hasManualEdits={savedFlyers.some(f => (f.fields.businessName && f.fields.businessName !== account.businessName) || (f.fields.orderUrl && f.fields.orderUrl !== account.orderUrl))}
+          lastSyncedAt={lastSyncedAt}
+        />
+      )}
 
       {showGBModal && (
         <GoogleBusinessModal onConnect={handleConnect} onClose={() => setShowGBModal(false)} />
