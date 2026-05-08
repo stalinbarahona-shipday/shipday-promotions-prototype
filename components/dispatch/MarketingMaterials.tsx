@@ -954,7 +954,7 @@ function FlyerEditorModal({
                 {template.flyerThemes ? (
                   template.flyerThemes.map(ft => {
                     const sel = colorTheme === ft.id;
-                    const isDark = ft.id === "stone" || ft.id === "charcoal";
+                    const usesBg = ft.id === "stone" || ft.id === "charcoal" || ft.id === "classic";
                     return (
                       <div
                         key={ft.id}
@@ -962,8 +962,8 @@ function FlyerEditorModal({
                         title={ft.label}
                         style={{
                           width: 26, height: 26, borderRadius: 99,
-                          background: isDark ? ft.bg : ft.pill,
-                          border: "none",
+                          background: usesBg ? ft.bg : ft.pill,
+                          border: ft.id === "classic" ? "1.5px solid #D1D5DB" : "none",
                           cursor: "pointer", flexShrink: 0,
                           boxShadow: sel
                             ? `0 0 0 2.5px ${t.surface}, 0 0 0 4.5px ${t.accent}`
