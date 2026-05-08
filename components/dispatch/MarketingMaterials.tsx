@@ -967,7 +967,7 @@ function FlyerEditorModal({
             {/* Offer fields — only non-business fields */}
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               {offerFields.map(f => (
-                <EditorField key={f.id} label={f.label} placeholder={f.placeholder} value={fields[f.id] ?? ""} onChange={v => setField(f.id, v)} multiline={f.multiline} />
+                <EditorField key={f.id} label={f.label} placeholder={f.placeholder} value={fields[f.id] ?? ""} onChange={v => setField(f.id, v)} multiline={f.multiline} maxLength={f.maxLength} />
               ))}
             </div>
 
