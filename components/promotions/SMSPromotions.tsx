@@ -3,8 +3,9 @@
 import { useState } from "react";
 import {
   Megaphone, Users, Sparkles, MessageCircleHeart,
-  ChevronRight, Info, Plus,
+  ChevronRight, Info, Plus, TrendingUp, TrendingDown,
   UserPlus, Crown, RefreshCw, ShoppingBag, Moon, ThumbsDown, MapPin,
+  LayoutGrid, BarChart2,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
 import CreateCampaignModal from "@/components/promotions/CreateCampaignModal";
@@ -131,6 +132,12 @@ export default function SMSPromotions() {
 
 /* ── Overview tab ── */
 
+const RECENT_CAMPAIGNS = [
+  { name: "20% off - Labor day",  date: "Apr 2 · 11:00 AM", delivered: 450, clickRate: "62%", revenue: "$1,240" },
+  { name: "Flash sale - Spring",  date: "Jan 20 · 2:30 PM",  delivered: 480, clickRate: "55%", revenue: "$980"   },
+  { name: "New products release", date: "Feb 1 · 4:45 PM",   delivered: 510, clickRate: "48%", revenue: "$760"   },
+];
+
 function OverviewTab({
   showBanner,
   onDismissBanner,
@@ -146,9 +153,84 @@ function OverviewTab({
   onNewCampaign: () => void;
   onTabChange: (tab: Tab) => void;
 }) {
+  const [view, setView] = useState<"current" | "new">("current");
+
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px", gap: 24, background: C.bg, minHeight: "100%" }}>
 
+      {/* View toggle */}
+      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ display: "inline-flex", background: C.bgPage, borderRadius: 10, padding: 4, gap: 2 }}>
+          <button
+            onClick={() => setView("current")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit",
+              fontSize: 13, fontWeight: 500,
+              background: view === "current" ? C.bg : "transparent",
+              color: view === "current" ? C.text : C.textMuted,
+              boxShadow: view === "current" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              transition: "all 150ms ease",
+            }}
+          >
+            <LayoutGrid size={14} />
+            Current
+          </button>
+          <button
+            onClick={() => setView("new")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit",
+              fontSize: 13, fontWeight: 500,
+              background: view === "new" ? C.bg : "transparent",
+              color: view === "new" ? C.text : C.textMuted,
+              boxShadow: view === "new" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              transition: "all 150ms ease",
+            }}
+          >
+            <BarChart2 size={14} />
+            New
+          </button>
+        </div>
+      </div>
+
+      {view === "current" ? (
+        <CurrentOverview
+          showBanner={showBanner}
+          onDismissBanner={onDismissBanner}
+          onAutomate={onAutomate}
+          onSubscriber={onSubscriber}
+          onTabChange={onTabChange}
+        />
+      ) : (
+        <NewOverview
+          onAutomate={onAutomate}
+          onSubscriber={onSubscriber}
+          onNewCampaign={onNewCampaign}
+          onTabChange={onTabChange}
+        />
+      )}
+    </div>
+  );
+}
+
+/* ── Current overview (unchanged design) ── */
+
+function CurrentOverview({
+  showBanner,
+  onDismissBanner,
+  onAutomate,
+  onSubscriber,
+  onTabChange,
+}: {
+  showBanner: boolean;
+  onDismissBanner: () => void;
+  onAutomate: () => void;
+  onSubscriber: () => void;
+  onTabChange: (tab: Tab) => void;
+}) {
+  return (
+    <>
       {/* AI banner */}
       {showBanner && (
         <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, background: C.bgGreen, borderRadius: 16 }}>
@@ -220,9 +302,9 @@ function OverviewTab({
         {PROMOTION_TOOLS.map((tool, i) => {
           const Icon = tool.icon;
           const handleClick = () => {
-            if (tool.label === "Campaigns")                        onTabChange("Campaigns");
-            else if (tool.label === "AI-generated audiences")      onTabChange("Audiences");
-            else if (tool.label === "Automate your SMS campaigns")  onAutomate();
+            if (tool.label === "Campaigns")                            onTabChange("Campaigns");
+            else if (tool.label === "AI-generated audiences")          onTabChange("Audiences");
+            else if (tool.label === "Automate your SMS campaigns")     onAutomate();
             else if (tool.label === "Set up SMS subscriber collection") onSubscriber();
           };
           return (
@@ -233,8 +315,7 @@ function OverviewTab({
                 display: "flex", flexDirection: "row", alignItems: "center",
                 padding: "24px", gap: 24,
                 borderBottom: i < PROMOTION_TOOLS.length - 1 ? `1px solid ${C.border}` : "none",
-                cursor: "pointer",
-                transition: "background 150ms ease",
+                cursor: "pointer", transition: "background 150ms ease",
               }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
@@ -255,7 +336,231 @@ function OverviewTab({
           );
         })}
       </div>
-    </div>
+    </>
+  );
+}
+
+/* ── New overview (redesigned) ── */
+
+function NewOverview({
+  onAutomate,
+  onSubscriber,
+  onNewCampaign,
+  onTabChange,
+}: {
+  onAutomate: () => void;
+  onSubscriber: () => void;
+  onNewCampaign: () => void;
+  onTabChange: (tab: Tab) => void;
+}) {
+  const [period, setPeriod] = useState("30");
+
+  const STATS = [
+    {
+      label: "Revenue from SMS",
+      value: "$3,980",
+      trend: "+18%",
+      up: true,
+      sub: "vs last period",
+      primary: true,
+    },
+    {
+      label: "Subscribers",
+      value: "450",
+      trend: "+23 this month",
+      up: true,
+      sub: "active opt-ins",
+      primary: false,
+    },
+    {
+      label: "Click rate",
+      value: "54%",
+      trend: "+6%",
+      up: true,
+      sub: "vs last period",
+      primary: false,
+      info: true,
+    },
+    {
+      label: "Unsubscribe rate",
+      value: "1.2%",
+      trend: "Healthy",
+      up: true,
+      sub: "industry avg 2%",
+      primary: false,
+      health: "green" as const,
+    },
+  ];
+
+  const SETUP_ITEMS = [
+    { icon: Sparkles,          label: "Automate campaigns",           desc: "Let AI schedule offers based on behavior.", action: onAutomate },
+    { icon: MessageCircleHeart, label: "Set up subscriber collection", desc: "Collect opt-ins from your tracking page.",  action: onSubscriber },
+  ];
+
+  return (
+    <>
+      {/* Performance card */}
+      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+        {/* Card header with period selector */}
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Performance</span>
+          <select
+            value={period}
+            onChange={e => setPeriod(e.target.value)}
+            style={{
+              fontSize: 13, fontWeight: 500, color: C.textMuted,
+              border: `1px solid ${C.border}`, borderRadius: 8,
+              padding: "5px 10px", background: C.bgPage,
+              cursor: "pointer", fontFamily: "inherit", appearance: "none",
+              outline: "none",
+            }}
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+
+        {/* Stats row */}
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
+          {STATS.map((stat, i, arr) => (
+            <div key={stat.label} style={{ display: "flex", flexDirection: "row", alignItems: "stretch", flex: stat.primary ? 1.3 : 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", padding: "24px 28px", gap: 8, flex: 1, background: stat.primary ? C.bgGreen : "transparent" }}>
+                {/* Label */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>{stat.label}</span>
+                  {stat.info && <Info size={14} color={C.textMuted} />}
+                </div>
+                {/* Value */}
+                <span style={{ fontSize: stat.primary ? 42 : 34, fontWeight: 800, letterSpacing: "-0.02em", color: stat.primary ? C.green : C.text, lineHeight: 1 }}>
+                  {stat.value}
+                </span>
+                {/* Trend */}
+                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
+                  {stat.health === "green" ? (
+                    <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 8px", background: "#DFFDEF", borderRadius: 99, fontSize: 12, fontWeight: 600, color: "#03624C" }}>
+                      {stat.trend}
+                    </span>
+                  ) : (
+                    <>
+                      {stat.up
+                        ? <TrendingUp size={13} color={stat.label === "Unsubscribe rate" ? "#DC2626" : "#008062"} />
+                        : <TrendingDown size={13} color="#DC2626" />
+                      }
+                      <span style={{ fontSize: 13, fontWeight: 500, color: stat.up ? C.green : "#DC2626" }}>{stat.trend}</span>
+                    </>
+                  )}
+                  <span style={{ fontSize: 12, color: C.textMuted, marginLeft: 2 }}>{stat.sub}</span>
+                </div>
+              </div>
+              {i < arr.length - 1 && (
+                <div style={{ width: 1, background: C.border, flexShrink: 0 }} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent campaigns */}
+      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Recent campaigns</span>
+          <button
+            onClick={() => onTabChange("Campaigns")}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 500, color: C.green, padding: 0 }}
+          >
+            View all
+          </button>
+        </div>
+
+        {/* Table header */}
+        <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
+          {["Campaign", "Date", "Delivered", "Click rate", "Revenue"].map((h, i) => (
+            <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "12px 20px" }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>{h}</span>
+            </div>
+          ))}
+        </div>
+
+        {RECENT_CAMPAIGNS.map((c, i) => (
+          <div
+            key={c.name}
+            onClick={() => onTabChange("Campaigns")}
+            style={{
+              display: "flex", flexDirection: "row", alignItems: "center",
+              borderBottom: i < RECENT_CAMPAIGNS.length - 1 ? `1px solid #F4F4F8` : "none",
+              cursor: "pointer", transition: "background 150ms ease",
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+          >
+            <div style={{ flex: 2, padding: "14px 20px" }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{c.name}</span>
+            </div>
+            <div style={{ flex: 1, padding: "14px 20px" }}>
+              <span style={{ fontSize: 14, color: C.textSecondary }}>{c.date}</span>
+            </div>
+            <div style={{ flex: 1, padding: "14px 20px" }}>
+              <span style={{ fontSize: 14, color: C.text }}>{c.delivered}</span>
+            </div>
+            <div style={{ flex: 1, padding: "14px 20px" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.green }}>{c.clickRate}</span>
+            </div>
+            <div style={{ flex: 1, padding: "14px 20px" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{c.revenue}</span>
+            </div>
+          </div>
+        ))}
+
+        {/* Send new campaign CTA */}
+        <div style={{ padding: "16px 20px", borderTop: `1px solid ${C.border}` }}>
+          <button
+            onClick={onNewCampaign}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "8px 16px 8px 11px", background: C.green,
+              border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            }}
+          >
+            <Plus size={16} color="#FFFFFF" />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New campaign</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Setup actions */}
+      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Setup</span>
+        </div>
+        {SETUP_ITEMS.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <div
+              key={item.label}
+              onClick={item.action}
+              style={{
+                display: "flex", flexDirection: "row", alignItems: "center",
+                padding: "20px 24px", gap: 20,
+                borderBottom: i < SETUP_ITEMS.length - 1 ? `1px solid ${C.border}` : "none",
+                cursor: "pointer", transition: "background 150ms ease",
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+            >
+              <div style={{ width: 44, height: 44, background: C.bgGreen, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Icon size={20} color={C.green} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0, lineHeight: "140%" }}>{item.label}</p>
+                <p style={{ fontSize: 14, fontWeight: 400, color: C.textSecondary, margin: "2px 0 0", lineHeight: "140%" }}>{item.desc}</p>
+              </div>
+              <ChevronRight size={20} color="#525252" />
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
