@@ -9,6 +9,7 @@ import {
 import { useTheme } from "@/components/ThemeContext";
 import CreateCampaignModal from "@/components/promotions/CreateCampaignModal";
 import AutomateModal from "@/components/promotions/AutomateModal";
+import SubscriberModal from "@/components/promotions/SubscriberModal";
 
 /* ── Tokens (from Figma) ── */
 const C = {
@@ -57,6 +58,7 @@ export default function SMSPromotions() {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   const [showModal, setShowModal] = useState(false);
   const [showAutomateModal, setShowAutomateModal] = useState(false);
+  const [showSubscriberModal, setShowSubscriberModal] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
 
   return (
@@ -106,6 +108,7 @@ export default function SMSPromotions() {
               showBanner={showBanner}
               onDismissBanner={() => setShowBanner(false)}
               onAutomate={() => setShowAutomateModal(true)}
+              onSubscriber={() => setShowSubscriberModal(true)}
               onNewCampaign={() => setShowModal(true)}
               onTabChange={setActiveTab}
             />
@@ -121,6 +124,7 @@ export default function SMSPromotions() {
 
       {showModal && <CreateCampaignModal onClose={() => setShowModal(false)} />}
       {showAutomateModal && <AutomateModal onClose={() => setShowAutomateModal(false)} />}
+      {showSubscriberModal && <SubscriberModal onClose={() => setShowSubscriberModal(false)} />}
     </>
   );
 }
@@ -131,12 +135,14 @@ function OverviewTab({
   showBanner,
   onDismissBanner,
   onAutomate,
+  onSubscriber,
   onNewCampaign,
   onTabChange,
 }: {
   showBanner: boolean;
   onDismissBanner: () => void;
   onAutomate: () => void;
+  onSubscriber: () => void;
   onNewCampaign: () => void;
   onTabChange: (tab: Tab) => void;
 }) {
@@ -214,9 +220,10 @@ function OverviewTab({
         {PROMOTION_TOOLS.map((tool, i) => {
           const Icon = tool.icon;
           const handleClick = () => {
-            if (tool.label === "Campaigns")                  onTabChange("Campaigns");
-            else if (tool.label === "AI-generated audiences") onTabChange("Audiences");
-            else if (tool.label === "Automate your SMS campaigns") onAutomate();
+            if (tool.label === "Campaigns")                        onTabChange("Campaigns");
+            else if (tool.label === "AI-generated audiences")      onTabChange("Audiences");
+            else if (tool.label === "Automate your SMS campaigns")  onAutomate();
+            else if (tool.label === "Set up SMS subscriber collection") onSubscriber();
           };
           return (
             <div
