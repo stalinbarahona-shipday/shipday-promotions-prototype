@@ -342,6 +342,14 @@ function CurrentOverview({
 
 /* ── New overview (redesigned) ── */
 
+const CARD = {
+  background: "#FFFFFF",
+  border: "1px solid #E3E4EB",
+  borderRadius: 16,
+  boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
+  overflow: "hidden" as const,
+};
+
 function NewOverview({
   onAutomate,
   onSubscriber,
@@ -356,63 +364,31 @@ function NewOverview({
   const [period, setPeriod] = useState("30");
 
   const STATS = [
-    {
-      label: "Revenue from SMS",
-      value: "$3,980",
-      trend: "+18%",
-      up: true,
-      sub: "vs last period",
-      primary: true,
-    },
-    {
-      label: "Subscribers",
-      value: "450",
-      trend: "+23 this month",
-      up: true,
-      sub: "active opt-ins",
-      primary: false,
-    },
-    {
-      label: "Click rate",
-      value: "54%",
-      trend: "+6%",
-      up: true,
-      sub: "vs last period",
-      primary: false,
-      info: true,
-    },
-    {
-      label: "Unsubscribe rate",
-      value: "1.2%",
-      trend: "Healthy",
-      up: true,
-      sub: "industry avg 2%",
-      primary: false,
-      health: "green" as const,
-    },
+    { label: "Revenue from SMS", value: "$3,980", trend: "+18%",          up: true,  sub: "vs last period",  info: false, health: false },
+    { label: "Subscribers",      value: "450",    trend: "+23 this month", up: true,  sub: "active opt-ins",  info: false, health: false },
+    { label: "Click rate",       value: "54%",    trend: "+6%",            up: true,  sub: "vs last period",  info: true,  health: false },
+    { label: "Unsubscribe rate", value: "1.2%",   trend: "Healthy",        up: true,  sub: "industry avg 2%", info: false, health: true  },
   ];
 
   const SETUP_ITEMS = [
-    { icon: Sparkles,          label: "Automate campaigns",           desc: "Let AI schedule offers based on behavior.", action: onAutomate },
+    { icon: Sparkles,           label: "Automate campaigns",           desc: "Let AI schedule offers based on behavior.", action: onAutomate },
     { icon: MessageCircleHeart, label: "Set up subscriber collection", desc: "Collect opt-ins from your tracking page.",  action: onSubscriber },
   ];
 
   return (
     <>
       {/* Performance card */}
-      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
-        {/* Card header with period selector */}
+      <div style={CARD}>
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Performance</span>
           <select
             value={period}
             onChange={e => setPeriod(e.target.value)}
             style={{
-              fontSize: 13, fontWeight: 500, color: C.textMuted,
-              border: `1px solid ${C.border}`, borderRadius: 8,
-              padding: "5px 10px", background: C.bgPage,
-              cursor: "pointer", fontFamily: "inherit", appearance: "none",
-              outline: "none",
+              fontSize: 13, fontWeight: 500, color: C.text,
+              border: `1px solid ${C.border}`, borderRadius: 10,
+              padding: "6px 12px", background: C.bg,
+              cursor: "pointer", fontFamily: "inherit", outline: "none",
             }}
           >
             <option value="7">Last 7 days</option>
@@ -421,36 +397,32 @@ function NewOverview({
           </select>
         </div>
 
-        {/* Stats row */}
         <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
           {STATS.map((stat, i, arr) => (
-            <div key={stat.label} style={{ display: "flex", flexDirection: "row", alignItems: "stretch", flex: stat.primary ? 1.3 : 1 }}>
-              <div style={{ display: "flex", flexDirection: "column", padding: "24px 28px", gap: 8, flex: 1, background: stat.primary ? C.bgGreen : "transparent" }}>
-                {/* Label */}
+            <div key={stat.label} style={{ display: "flex", flexDirection: "row", alignItems: "stretch", flex: 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", padding: "24px 28px", gap: 10, flex: 1 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>{stat.label}</span>
                   {stat.info && <Info size={14} color={C.textMuted} />}
                 </div>
-                {/* Value */}
-                <span style={{ fontSize: stat.primary ? 42 : 34, fontWeight: 800, letterSpacing: "-0.02em", color: stat.primary ? C.green : C.text, lineHeight: 1 }}>
+                <span style={{ fontSize: 36, fontWeight: 800, letterSpacing: "-0.02em", color: C.text, lineHeight: 1 }}>
                   {stat.value}
                 </span>
-                {/* Trend */}
-                <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 2 }}>
-                  {stat.health === "green" ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 8px", background: "#DFFDEF", borderRadius: 99, fontSize: 12, fontWeight: 600, color: "#03624C" }}>
-                      {stat.trend}
-                    </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                  {stat.health ? (
+                    <>
+                      <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 8px", background: "#DFFDEF", borderRadius: 99, fontSize: 12, fontWeight: 600, color: "#03624C" }}>
+                        {stat.trend}
+                      </span>
+                      <span style={{ fontSize: 12, color: C.textMuted }}>{stat.sub}</span>
+                    </>
                   ) : (
                     <>
-                      {stat.up
-                        ? <TrendingUp size={13} color={stat.label === "Unsubscribe rate" ? "#DC2626" : "#008062"} />
-                        : <TrendingDown size={13} color="#DC2626" />
-                      }
-                      <span style={{ fontSize: 13, fontWeight: 500, color: stat.up ? C.green : "#DC2626" }}>{stat.trend}</span>
+                      <TrendingUp size={13} color={C.green} />
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.green }}>{stat.trend}</span>
+                      <span style={{ fontSize: 12, color: C.textMuted }}>{stat.sub}</span>
                     </>
                   )}
-                  <span style={{ fontSize: 12, color: C.textMuted, marginLeft: 2 }}>{stat.sub}</span>
                 </div>
               </div>
               {i < arr.length - 1 && (
@@ -462,26 +434,33 @@ function NewOverview({
       </div>
 
       {/* Recent campaigns */}
-      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+      <div style={CARD}>
+        {/* Header: title left, New campaign button right */}
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Recent campaigns</span>
           <button
-            onClick={() => onTabChange("Campaigns")}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 500, color: C.green, padding: 0 }}
+            onClick={onNewCampaign}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "8px 16px 8px 12px", background: C.green,
+              border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
+            }}
           >
-            View all
+            <Plus size={15} color="#FFFFFF" />
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New campaign</span>
           </button>
         </div>
 
         {/* Table header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
           {["Campaign", "Date", "Delivered", "Click rate", "Revenue"].map((h, i) => (
-            <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "12px 20px" }}>
+            <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "11px 20px" }}>
               <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>{h}</span>
             </div>
           ))}
         </div>
 
+        {/* Rows */}
         {RECENT_CAMPAIGNS.map((c, i) => (
           <div
             key={c.name}
@@ -494,42 +473,37 @@ function NewOverview({
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
           >
-            <div style={{ flex: 2, padding: "14px 20px" }}>
+            <div style={{ flex: 2, padding: "15px 20px" }}>
               <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{c.name}</span>
             </div>
-            <div style={{ flex: 1, padding: "14px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 20px" }}>
               <span style={{ fontSize: 14, color: C.textSecondary }}>{c.date}</span>
             </div>
-            <div style={{ flex: 1, padding: "14px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 20px" }}>
               <span style={{ fontSize: 14, color: C.text }}>{c.delivered}</span>
             </div>
-            <div style={{ flex: 1, padding: "14px 20px" }}>
-              <span style={{ fontSize: 14, fontWeight: 500, color: C.green }}>{c.clickRate}</span>
+            <div style={{ flex: 1, padding: "15px 20px" }}>
+              <span style={{ fontSize: 14, fontWeight: 600, color: C.green }}>{c.clickRate}</span>
             </div>
-            <div style={{ flex: 1, padding: "14px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 20px" }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{c.revenue}</span>
             </div>
           </div>
         ))}
 
-        {/* Send new campaign CTA */}
-        <div style={{ padding: "16px 20px", borderTop: `1px solid ${C.border}` }}>
+        {/* View all — bottom of table */}
+        <div style={{ padding: "14px 20px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "center" }}>
           <button
-            onClick={onNewCampaign}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "8px 16px 8px 11px", background: C.green,
-              border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit",
-            }}
+            onClick={() => onTabChange("Campaigns")}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 500, color: C.green, padding: 0 }}
           >
-            <Plus size={16} color="#FFFFFF" />
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New campaign</span>
+            View all campaigns
           </button>
         </div>
       </div>
 
       {/* Setup actions */}
-      <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+      <div style={CARD}>
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Setup</span>
         </div>
