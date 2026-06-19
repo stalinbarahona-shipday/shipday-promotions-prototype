@@ -1588,10 +1588,6 @@ function FlyerEditorModal({
                   ) : (
                     /* Not connected: stock photos + upload only */
                     <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-                      <div onClick={() => setPhoto(null)} title="No photo" style={{ width: 72, height: 96, borderRadius: 10, flexShrink: 0, cursor: "pointer", background: t.bgSecondary, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, border: `2px solid ${!photo ? t.accent : t.border}`, boxShadow: !photo ? `0 0 0 2px ${t.accentLight}` : "none", transition: "border-color 150ms ease, box-shadow 150ms ease" }}>
-                        <Icon name="hide_image" size={20} color={!photo ? t.accent : t.textMuted} />
-                        <span style={{ fontFamily: EDITOR_FONT, fontSize: 11, fontWeight: 500, color: !photo ? t.accent : t.textMuted }}>None</span>
-                      </div>
                       {PRESET_FOOD_PHOTOS.slice(0, 3).map(preset => {
                         const isSelected = photo === preset.url;
                         return (
