@@ -2101,8 +2101,10 @@ function BrandedFlyer({ qrValue, headline, subtitle, extra }: {
   return (
     <div style={{ width: "100%", height: "100%", background: "#FFFFFF", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", overflow: "hidden" }}>
       {/* Top content */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 20px 0", gap: 8, position: "relative", zIndex: 1 }}>
-        <span style={{ fontSize: 38 }}>🌐</span>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px 0", gap: 6, position: "relative", zIndex: 1 }}>
+        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#C8352A", border: "2.5px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
+          <span style={{ color: "#fff", fontWeight: 900, fontSize: 14 }}>K</span>
+        </div>
         <p style={{ fontSize: 15, fontWeight: 800, textAlign: "center", margin: 0, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: "1.3" }}>
           {headline}
         </p>
@@ -2155,10 +2157,10 @@ function MaterialCard({
         </button>
       </div>
 
-      {/* Body: form left, preview right */}
-      <div style={{ display: "flex", alignItems: "stretch" }}>
+      {/* Body: form left, preview box right */}
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", padding: 24, gap: 40 }}>
         {/* Left: form */}
-        <div style={{ flex: 1, padding: 24, display: "flex", flexDirection: "column", gap: 28 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 28 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             <span style={{ fontSize: 16, fontWeight: 500, color: t.text }}>URL destination</span>
             <div style={{ display: "flex", alignItems: "center", padding: "0 16px", background: t.bgTertiary, borderRadius: 10, height: 48 }}>
@@ -2180,13 +2182,23 @@ function MaterialCard({
           </div>
         </div>
 
-        {/* Right: preview */}
-        <div style={{ width: 260, borderLeft: `1px solid ${t.border}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: format === "image" ? "#FFFFFF" : t.bgTertiary, overflow: "hidden" }}>
+        {/* Right: preview box */}
+        <div style={{
+          width: 252, flexShrink: 0, borderRadius: 14, overflow: "hidden",
+          border: `1px solid ${t.border}`,
+          background: format === "image" ? "#FFFFFF" : t.bgTertiary,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          minHeight: 252,
+        }}>
           {format === "qr" ? (
             <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 12 }}>
-              <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={148} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+              <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={164} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
             </div>
-          ) : imagePreview}
+          ) : (
+            <div style={{ width: "100%", height: "100%", minHeight: 280, position: "relative" }}>
+              {imagePreview}
+            </div>
+          )}
         </div>
       </div>
     </div>
