@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Building2,
   Palette,
@@ -17,6 +18,16 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
+
+// Maps sidebar path keys to actual Next.js URLs
+const PATH_TO_URL: Record<string, string> = {
+  marketing:              "/settings/dispatch",
+  "promotions/sms":       "/settings/promotions/sms",
+  "promotions/tracking":  "/settings/promotions/tracking",
+  dispatch:               "/settings/dispatch",
+  services:               "/settings/dispatch",
+  preferences:            "/settings/dispatch",
+};
 
 /* ── Types ── */
 
@@ -85,15 +96,13 @@ const menuEntries: MenuEntry[] = [
 /* ── Component ── */
 
 interface SettingsSidebarProps {
-  activePage?: string;
+  activePage?: string;        // kept for backwards compat, ignored — URL drives active state
   onPageChange?: (page: string) => void;
 }
 
-export default function SettingsSidebar({
-  activePage = "dispatch",
-  onPageChange,
-}: SettingsSidebarProps) {
+export default function SettingsSidebar(_props: SettingsSidebarProps) {
   const t = useTheme();
+  const pathname = usePathname();
   return (
     <aside
       className="flex flex-col shrink-0 py-6 overflow-y-auto [&::-webkit-scrollbar]:hidden"
@@ -111,14 +120,13 @@ export default function SettingsSidebar({
       <div className="flex flex-col px-4 mt-5">
         {menuEntries.map((entry, i) => {
           if (entry.type === "item") {
-            return <FlatItem key={i} item={entry.item} activePage={activePage} />;
+            return <FlatItem key={i} item={entry.item} pathname={pathname} />;
           }
           return (
             <ExpandableGroup
               key={i}
               group={entry.group}
-              activePage={activePage}
-              onPageChange={onPageChange}
+              pathname={pathname}
             />
           );
         })}
@@ -129,10 +137,11 @@ export default function SettingsSidebar({
 
 /* ── Flat menu item ── */
 
-function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string }) {
+function FlatItem({ item, pathname }: { item: MenuItem; pathname: string }) {
   const t = useTheme();
   const Icon = item.icon;
-  const isActive = !!item.path && item.path === activePage;
+  const itemUrl = item.path ? PATH_TO_URL[item.path] : undefined;
+  const isActive = !!itemUrl && pathname === itemUrl;
   const activeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
   const badgeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
   const badgeColor = t.mode === "dark" ? "#4ADE80" : "#03624C";
@@ -180,15 +189,16 @@ function FlatItem({ item, activePage }: { item: MenuItem; activePage?: string })
 
 function ExpandableGroup({
   group,
-  activePage,
-  onPageChange,
+  pathname,
 }: {
   group: MenuGroup;
-  activePage: string;
-  onPageChange?: (page: string) => void;
+  pathname: string;
 }) {
   const t = useTheme();
-  const hasActiveChild = group.children.some((c) => c.path === activePage);
+  const router = useRouter();
+  const hasActiveChild = group.children.some(
+    (c) => PATH_TO_URL[c.path] && pathname === PATH_TO_URL[c.path]
+  );
   const [expanded, setExpanded] = useState(hasActiveChild);
   const activeBg = t.mode === "dark" ? "rgba(1,173,133,0.15)" : "#DBFBE5";
   const hoverBg = t.mode === "dark" ? t.surfaceHover : "#F8F8F5";
@@ -197,7 +207,7 @@ function ExpandableGroup({
 
   useEffect(() => {
     if (hasActiveChild) setExpanded(true);
-  }, [hasActiveChild]);
+  }, [hasActiveChild, pathname]);
 
   const Icon = group.icon;
 
@@ -238,7 +248,8 @@ function ExpandableGroup({
       {expanded && (
         <div style={{ padding: "0 6px 6px" }}>
           {group.children.map((child) => {
-            const isActive = child.path === activePage;
+            const childUrl = PATH_TO_URL[child.path] ?? null;
+            const isActive = !!childUrl && pathname === childUrl;
             return (
               <div
                 key={child.path}
@@ -255,7 +266,7 @@ function ExpandableGroup({
                 onMouseLeave={(e) => {
                   if (!isActive) e.currentTarget.style.background = "transparent";
                 }}
-                onClick={() => onPageChange?.(child.path)}
+                onClick={() => { if (childUrl) router.push(childUrl); }}
               >
                 <span
                   className={`flex-1 ${
