@@ -5,7 +5,7 @@ import {
   Megaphone, Users, Sparkles, MessageCircleHeart,
   ChevronRight, Info, Plus, TrendingUp, TrendingDown,
   UserPlus, Crown, RefreshCw, ShoppingBag, Moon, ThumbsDown, MapPin,
-  LayoutGrid, BarChart2,
+  LayoutGrid, BarChart2, Search,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
 import CreateCampaignModal from "@/components/promotions/CreateCampaignModal";
@@ -26,7 +26,7 @@ const C = {
   greenActive:  "#03624C",
 };
 
-const TABS = ["Overview", "Audiences", "Offers", "Campaigns"] as const;
+const TABS = ["Overview", "Audiences", "Discount codes", "Campaigns"] as const;
 type Tab = typeof TABS[number];
 
 const PROMOTION_TOOLS = [
@@ -115,9 +115,9 @@ export default function SMSPromotions() {
             />
           )}
           {activeTab === "Audiences" && <AudiencesTab onNewCampaign={() => setShowModal(true)} />}
-          {activeTab === "Offers" && <OffersTab />}
+          {activeTab === "Discount codes" && <DiscountCodesTab />}
           {activeTab === "Campaigns" && <CampaignsTab onNewCampaign={() => setShowModal(true)} />}
-          {activeTab !== "Overview" && activeTab !== "Audiences" && activeTab !== "Offers" && activeTab !== "Campaigns" && (
+          {activeTab !== "Overview" && activeTab !== "Audiences" && activeTab !== "Discount codes" && activeTab !== "Campaigns" && (
             <PlaceholderTab label={activeTab} />
           )}
         </div>
@@ -538,88 +538,127 @@ function NewOverview({
   );
 }
 
-/* ── Offers tab ── */
+/* ── Discount codes tab ── */
 
-const OFFERS = [
-  { code: "SUMMER20",     expiry: "Dec 25, 2024", link: "https://example.com/order" },
-  { code: "WINTER15",     expiry: "Jan 15, 2025", link: "https://example.com/order" },
-  { code: "FALL25",       expiry: "Nov 30, 2024", link: "https://example.com/order" },
-  { code: "SPRING10",     expiry: "Jun 20, 2024", link: "https://example.com/order" },
-  { code: "HOLIDAY30",    expiry: "Dec 31, 2024", link: "https://example.com/order" },
-  { code: "LUCKY7",       expiry: "Jul 04, 2024", link: "https://example.com/order" },
-  { code: "FREEDELIVERY", expiry: "Jul 12, 2024", link: "https://example.com/order" },
-  { code: "TAKE10",       expiry: "Sep 01, 2024", link: "https://example.com/order" },
-  { code: "WELCOME5",     expiry: "Ongoing",      link: "https://example.com/order" },
+const DISCOUNT_CODES = [
+  { code: "SUMMER20",     expiry: "Dec 25, 2024", link: "https://example.com/order", status: "Active"  },
+  { code: "WINTER15",     expiry: "Jan 15, 2025", link: "https://example.com/order", status: "Active"  },
+  { code: "FALL25",       expiry: "Nov 30, 2024", link: "https://example.com/order", status: "Expired" },
+  { code: "SPRING10",     expiry: "Jun 20, 2024", link: "https://example.com/order", status: "Expired" },
+  { code: "HOLIDAY30",    expiry: "Dec 31, 2024", link: "https://example.com/order", status: "Active"  },
+  { code: "LUCKY7",       expiry: "Jul 04, 2024", link: "https://example.com/order", status: "Expired" },
+  { code: "FREEDELIVERY", expiry: "Jul 12, 2024", link: "https://example.com/order", status: "Active"  },
+  { code: "TAKE10",       expiry: "Sep 01, 2024", link: "https://example.com/order", status: "Paused"  },
+  { code: "WELCOME5",     expiry: "Ongoing",      link: "https://example.com/order", status: "Active"  },
 ];
 
-function OffersTab() {
+const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  Active:  { bg: "#DFFDEF", color: "#03624C" },
+  Expired: { bg: "#F4F4F8", color: "#525252" },
+  Paused:  { bg: "#FEF3C7", color: "#92400E" },
+};
+
+function DiscountCodesTab() {
+  const [query, setQuery] = useState("");
+  const filtered = DISCOUNT_CODES.filter(o =>
+    o.code.toLowerCase().includes(query.toLowerCase())
+  );
+
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 32, background: C.bg, minHeight: "100%" }}>
 
       {/* Header row */}
-      <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
           <p style={{ fontSize: 20, fontWeight: 800, color: "#262626", margin: 0, lineHeight: "140%" }}>
-            All offers (23)
+            Discount codes ({DISCOUNT_CODES.length})
           </p>
-          <p style={{ fontSize: 16, fontWeight: 350, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>
-            Reusable promotions you can send to customers multiple times.
+          <p style={{ fontSize: 15, fontWeight: 400, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>
+            Reusable coupon codes you can attach to SMS campaigns. Customers enter these at checkout.
           </p>
         </div>
         <button
-          style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, padding: "8px 16px 8px 11px", background: C.green, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, padding: "8px 16px 8px 11px", background: C.green, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, marginTop: 4 }}
         >
           <Plus size={16} color="#FFFFFF" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#FFFFFF" }}>New offer</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New code</span>
         </button>
+      </div>
+
+      {/* Search */}
+      <div style={{ position: "relative", maxWidth: 340 }}>
+        <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+          <Search size={16} color={C.textMuted} />
+        </div>
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="Search discount codes…"
+          style={{
+            width: "100%", height: 40, paddingLeft: 38, paddingRight: 12,
+            border: `1px solid ${C.border}`, borderRadius: 10,
+            fontSize: 14, fontWeight: 400, color: C.text,
+            fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+            background: C.bg,
+          }}
+        />
       </div>
 
       {/* Table */}
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
         {/* Header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ flex: "0 0 240px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Offer code</span>
+          <div style={{ flex: "0 0 220px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Code</span>
           </div>
-          <div style={{ flex: "0 0 240px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Expiration date</span>
+          <div style={{ flex: "0 0 200px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Expiration</span>
           </div>
-          <div style={{ flex: 1, padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Associated order link</span>
+          <div style={{ flex: 1, padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Order link</span>
           </div>
-          <div style={{ flex: "0 0 160px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Status</span>
+          <div style={{ flex: "0 0 140px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Status</span>
           </div>
         </div>
 
         {/* Rows */}
-        {OFFERS.map((offer, i) => (
-          <div
-            key={offer.code}
-            style={{
-              display: "flex", flexDirection: "row", alignItems: "center",
-              borderBottom: i < OFFERS.length - 1 ? `1px solid #F4F4F8` : "none",
-              cursor: "pointer", transition: "background 150ms ease",
-            }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
-          >
-            <div style={{ flex: "0 0 240px", padding: "16px 24px" }}>
-              <span style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{offer.code}</span>
-            </div>
-            <div style={{ flex: "0 0 240px", padding: "16px 24px" }}>
-              <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{offer.expiry}</span>
-            </div>
-            <div style={{ flex: 1, padding: "16px 24px" }}>
-              <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{offer.link}</span>
-            </div>
-            <div style={{ flex: "0 0 160px", padding: "16px 24px" }}>
-              <span style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", background: "#DFFDEF", borderRadius: 99, fontSize: 14, fontWeight: 500, color: "#03624C", lineHeight: "110%" }}>
-                Active
-              </span>
-            </div>
+        {filtered.length === 0 ? (
+          <div style={{ padding: "40px 24px", textAlign: "center" }}>
+            <span style={{ fontSize: 14, color: C.textMuted }}>No codes match &ldquo;{query}&rdquo;</span>
           </div>
-        ))}
+        ) : (
+          filtered.map((offer, i) => {
+            const s = CODE_STATUS_STYLES[offer.status] ?? CODE_STATUS_STYLES.Active;
+            return (
+              <div
+                key={offer.code}
+                style={{
+                  display: "flex", flexDirection: "row", alignItems: "center",
+                  borderBottom: i < filtered.length - 1 ? `1px solid #F4F4F8` : "none",
+                  cursor: "pointer", transition: "background 150ms ease",
+                }}
+                onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
+                onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+              >
+                <div style={{ flex: "0 0 220px", padding: "15px 24px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: C.text, fontFamily: "monospace", letterSpacing: "0.02em" }}>{offer.code}</span>
+                </div>
+                <div style={{ flex: "0 0 200px", padding: "15px 24px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 400, color: C.text }}>{offer.expiry}</span>
+                </div>
+                <div style={{ flex: 1, padding: "15px 24px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 400, color: C.textMuted }}>{offer.link}</span>
+                </div>
+                <div style={{ flex: "0 0 140px", padding: "15px 24px" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
+                    {offer.status}
+                  </span>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
@@ -628,20 +667,34 @@ function OffersTab() {
 /* ── Campaigns tab ── */
 
 const CAMPAIGNS = [
-  { name: "20% off - Labor day",     datetime: "Apr 2, 2024 · 11:00 AM",  recipients: 450, sent: 450, delivered: 450 },
-  { name: "Flash sale - Spring",     datetime: "Jan 20, 2024 · 2:30 PM",  recipients: 480, sent: 480, delivered: 480 },
-  { name: "New products release",    datetime: "Feb 1, 2024 · 4:45 PM",   recipients: 510, sent: 510, delivered: 510 },
-  { name: "Loyalty reward - June",   datetime: "Mar 12, 2024 · 9:00 AM",  recipients: 490, sent: 490, delivered: 490 },
-  { name: "Free shipping - May",     datetime: "Dec 24, 2023 · 1:15 PM",  recipients: 460, sent: 460, delivered: 460 },
-  { name: "Holiday season - 30% off",datetime: "Nov 5, 2023 · 3:30 PM",   recipients: 500, sent: 500, delivered: 500 },
+  { name: "Summer happy hour deal",   datetime: "Jun 28, 2025 · 5:00 PM",  recipients: 450, sent: "-",  delivered: "-",  status: "Scheduled" },
+  { name: "Weekend special - 15% off",datetime: "Jun 22, 2025 · 10:00 AM", recipients: 480, sent: 480,  delivered: 471,  status: "Sending"   },
+  { name: "20% off - Labor day",      datetime: "Apr 2, 2025 · 11:00 AM",  recipients: 450, sent: 450,  delivered: 450,  status: "Completed" },
+  { name: "Flash sale - Spring",      datetime: "Jan 20, 2025 · 2:30 PM",  recipients: 480, sent: 480,  delivered: 480,  status: "Completed" },
+  { name: "New products release",     datetime: "Feb 1, 2025 · 4:45 PM",   recipients: 510, sent: 510,  delivered: 510,  status: "Completed" },
+  { name: "Loyalty reward - June",    datetime: "Mar 12, 2024 · 9:00 AM",  recipients: 490, sent: 490,  delivered: 490,  status: "Completed" },
+  { name: "Free shipping - May",      datetime: "Dec 24, 2023 · 1:15 PM",  recipients: 460, sent: 460,  delivered: 460,  status: "Completed" },
+  { name: "Holiday season - 30% off", datetime: "Nov 5, 2023 · 3:30 PM",   recipients: 500, sent: 498,  delivered: 421,  status: "Failed"    },
 ];
 
+const CAMPAIGN_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
+  Completed: { bg: "#DFFDEF", color: "#03624C" },
+  Scheduled: { bg: "#EEF2FF", color: "#3730A3" },
+  Sending:   { bg: "#FEF9C3", color: "#854D0E" },
+  Failed:    { bg: "#FEE2E2", color: "#991B1B" },
+};
+
 function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
+  const [query, setQuery] = useState("");
+  const filtered = CAMPAIGNS.filter(c =>
+    c.name.toLowerCase().includes(query.toLowerCase())
+  );
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 48, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 40, background: C.bg, minHeight: "100%" }}>
 
       {/* Campaign performance card */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
         <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
           <p style={{ fontSize: 18, fontWeight: 800, color: "#262626", margin: 0, lineHeight: "140%", flex: 1 }}>
             Campaign performance
@@ -651,85 +704,119 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
             style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, padding: "8px 16px 8px 11px", background: C.green, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}
           >
             <Plus size={16} color="#FFFFFF" />
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#FFFFFF" }}>New campaign</span>
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New campaign</span>
           </button>
         </div>
         <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
           <div style={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", gap: 16, borderRight: `1px solid ${C.border}` }}>
-              <span style={{ fontSize: 16, fontWeight: 500, color: C.textMuted }}>Campaigns sent</span>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", gap: 12, borderRight: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Campaigns sent</span>
               <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", color: C.text }}>12</span>
             </div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", gap: 16 }}>
-              <span style={{ fontSize: 16, fontWeight: 500, color: C.textMuted }}>Engagement rate</span>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", gap: 12, borderRight: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Engagement rate</span>
               <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", color: C.text }}>64%</span>
+            </div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "24px", gap: 12 }}>
+              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Scheduled</span>
+              <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-0.02em", color: C.text }}>1</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Campaign history table */}
+      {/* Campaign history */}
       <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <p style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: 0, lineHeight: "140%" }}>
-          Campaign history
-        </p>
-        <div style={{ border: `1px solid ${C.border}`, borderRadius: "16px 16px 0 0", overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: 0, lineHeight: "140%" }}>
+            Campaign history
+          </p>
+          {/* Search */}
+          <div style={{ position: "relative", width: 300 }}>
+            <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+              <Search size={15} color={C.textMuted} />
+            </div>
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search campaigns…"
+              style={{
+                width: "100%", height: 38, paddingLeft: 36, paddingRight: 12,
+                border: `1px solid ${C.border}`, borderRadius: 10,
+                fontSize: 14, fontWeight: 400, color: C.text,
+                fontFamily: "inherit", outline: "none", boxSizing: "border-box",
+                background: C.bg,
+              }}
+            />
+          </div>
+        </div>
+
+        <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
           {/* Header */}
           <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
-            <div style={{ flex: 1, padding: "16px 24px" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Campaign name</span>
+            <div style={{ flex: 1, padding: "14px 24px" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Campaign name</span>
             </div>
-            <div style={{ flex: "0 0 228px", padding: "16px 24px" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Date &amp; Time</span>
+            <div style={{ flex: "0 0 210px", padding: "14px 24px" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Date &amp; Time</span>
             </div>
-            <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Recipients</span>
+            <div style={{ flex: "0 0 110px", padding: "14px 24px", textAlign: "right" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Recipients</span>
             </div>
-            <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Sent</span>
+            <div style={{ flex: "0 0 90px", padding: "14px 24px", textAlign: "right" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Sent</span>
             </div>
-            <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Delivered</span>
+            <div style={{ flex: "0 0 100px", padding: "14px 24px", textAlign: "right" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Delivered</span>
             </div>
-            <div style={{ flex: "0 0 148px", padding: "16px 24px" }}>
-              <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Status</span>
+            <div style={{ flex: "0 0 140px", padding: "14px 24px" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Status</span>
             </div>
           </div>
 
           {/* Rows */}
-          {CAMPAIGNS.map((c, i) => (
-            <div
-              key={c.name}
-              style={{
-                display: "flex", flexDirection: "row", alignItems: "center",
-                borderBottom: i < CAMPAIGNS.length - 1 ? `1px solid #F4F4F8` : "none",
-                cursor: "pointer", transition: "background 150ms ease",
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
-            >
-              <div style={{ flex: 1, padding: "16px 24px" }}>
-                <span style={{ fontSize: 16, fontWeight: 500, color: C.text }}>{c.name}</span>
-              </div>
-              <div style={{ flex: "0 0 228px", padding: "16px 24px" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{c.datetime}</span>
-              </div>
-              <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{c.recipients}</span>
-              </div>
-              <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{c.sent}</span>
-              </div>
-              <div style={{ flex: "0 0 120px", padding: "16px 24px", textAlign: "right" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>{c.delivered}</span>
-              </div>
-              <div style={{ flex: "0 0 148px", padding: "16px 24px" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", padding: "7px 12px", background: "#DFFDEF", borderRadius: 99, fontSize: 14, fontWeight: 500, color: "#03624C", lineHeight: "110%" }}>
-                  Completed
-                </span>
-              </div>
+          {filtered.length === 0 ? (
+            <div style={{ padding: "40px 24px", textAlign: "center" }}>
+              <span style={{ fontSize: 14, color: C.textMuted }}>No campaigns match &ldquo;{query}&rdquo;</span>
             </div>
-          ))}
+          ) : (
+            filtered.map((c, i) => {
+              const s = CAMPAIGN_STATUS_STYLES[c.status] ?? CAMPAIGN_STATUS_STYLES.Completed;
+              return (
+                <div
+                  key={c.name}
+                  style={{
+                    display: "flex", flexDirection: "row", alignItems: "center",
+                    borderBottom: i < filtered.length - 1 ? `1px solid #F4F4F8` : "none",
+                    cursor: "pointer", transition: "background 150ms ease",
+                  }}
+                  onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
+                  onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
+                >
+                  <div style={{ flex: 1, padding: "15px 24px" }}>
+                    <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{c.name}</span>
+                  </div>
+                  <div style={{ flex: "0 0 210px", padding: "15px 24px" }}>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: C.textSecondary }}>{c.datetime}</span>
+                  </div>
+                  <div style={{ flex: "0 0 110px", padding: "15px 24px", textAlign: "right" }}>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{c.recipients}</span>
+                  </div>
+                  <div style={{ flex: "0 0 90px", padding: "15px 24px", textAlign: "right" }}>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{c.sent}</span>
+                  </div>
+                  <div style={{ flex: "0 0 100px", padding: "15px 24px", textAlign: "right" }}>
+                    <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{c.delivered}</span>
+                  </div>
+                  <div style={{ flex: "0 0 140px", padding: "15px 24px" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
+                      {c.status}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
@@ -771,21 +858,34 @@ function AudiencesTab({ onNewCampaign }: { onNewCampaign: () => void }) {
         </button>
       </div>
 
+      {/* Zero-state callout */}
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 16, padding: "16px 20px", background: C.bgGreen, borderRadius: 12, border: `1px solid #C6F6E4` }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          <Users size={18} color={C.green} />
+        </div>
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: C.greenActive, margin: 0, lineHeight: "140%" }}>Audiences populate automatically</p>
+          <p style={{ fontSize: 13, fontWeight: 400, color: C.green, margin: "2px 0 0", lineHeight: "140%" }}>
+            As customers subscribe to SMS from your tracking page, they&apos;ll be sorted into these segments automatically. No setup needed.
+          </p>
+        </div>
+      </div>
+
       {/* Table */}
       <div style={{ border: `1px solid ${C.border}`, borderRadius: "16px 16px 0 0", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ flex: "0 0 407px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Audience</span>
+          <div style={{ flex: "0 0 407px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Audience</span>
           </div>
-          <div style={{ flex: "0 0 167px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Customers</span>
+          <div style={{ flex: "0 0 167px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Customers</span>
           </div>
-          <div style={{ flex: "0 0 167px", padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Campaigns sent</span>
+          <div style={{ flex: "0 0 167px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Campaigns sent</span>
           </div>
-          <div style={{ flex: 1, padding: "16px 24px" }}>
-            <span style={{ fontSize: 15, fontWeight: 500, color: C.textMuted }}>Engagement rate</span>
+          <div style={{ flex: 1, padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Engagement rate</span>
           </div>
           <div style={{ flex: "0 0 72px" }} />
         </div>
