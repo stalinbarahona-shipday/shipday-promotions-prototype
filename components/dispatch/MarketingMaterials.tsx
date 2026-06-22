@@ -2092,34 +2092,72 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
    TAB 1 — QR CODES & TEMPLATES
 ══════════════════════════════════════════════ */
 
-function BrandedFlyer({ qrValue, headline, subtitle, extra }: {
+function BrandedFlyer({ qrValue, headline, subtitle, showStars }: {
   qrValue: string;
   headline: string;
   subtitle: string;
-  extra?: React.ReactNode;
+  showStars?: boolean;
 }) {
   return (
-    <div style={{ width: "100%", height: "100%", background: "#FFFFFF", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", overflow: "hidden" }}>
-      {/* Top content */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px 0", gap: 6, position: "relative", zIndex: 1 }}>
-        <div style={{ width: 48, height: 48, borderRadius: "50%", background: "#C8352A", border: "2.5px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 2 }}>
-          <span style={{ color: "#fff", fontWeight: 900, fontSize: 14 }}>K</span>
-        </div>
-        <p style={{ fontSize: 15, fontWeight: 800, textAlign: "center", margin: 0, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: "1.3" }}>
-          {headline}
-        </p>
-        <p style={{ fontSize: 11, color: "#525252", textAlign: "center", margin: 0, lineHeight: "1.55", padding: "0 8px" }}>
-          {subtitle}
-        </p>
-        {extra}
+    <div style={{
+      width: 252, height: 252,
+      background: "#FFFFFF",
+      border: "0.9px solid #E3E4EB",
+      position: "relative",
+      overflow: "hidden",
+      flexShrink: 0,
+    }}>
+      {/* Green bar — bottom */}
+      <div style={{ position: "absolute", width: 252, height: 93.33, left: 0, bottom: 0, background: "#008062" }} />
+
+      {/* QR code */}
+      <div style={{
+        position: "absolute", width: 93.33, height: 93.33,
+        left: 79.33, top: 136.03,
+        border: "2.8px solid rgba(0,0,0,0.15)",
+        borderRadius: 3.5,
+        background: "#FFFFFF",
+        overflow: "hidden",
+      }}>
+        <QRCodeSVG value={toQrUrl(qrValue)} size={88} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
       </div>
 
-      {/* Green dome */}
-      <div style={{ position: "absolute", bottom: 0, width: "160%", left: "-30%", height: "58%", background: "#008062", borderRadius: "50% 50% 0 0" }} />
+      {/* Avatar circle */}
+      <div style={{
+        position: "absolute", width: 37.33, height: 37.33,
+        left: 107.33, top: 18.67,
+        background: "#C8352A",
+        border: "0.52px solid #F4F4F8",
+        borderRadius: 51.33,
+        display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <span style={{ color: "#fff", fontWeight: 900, fontSize: 13 }}>K</span>
+      </div>
 
-      {/* QR card — overlaps dome */}
-      <div style={{ position: "absolute", bottom: 16, zIndex: 2, background: "#FFFFFF", borderRadius: 12, padding: "8px 8px 6px", boxShadow: "0 4px 16px rgba(0,0,0,0.14)" }}>
-        <QRCodeSVG value={toQrUrl(qrValue)} size={96} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+      {/* Text + stars group */}
+      <div style={{
+        position: "absolute", left: 17.97, top: 70.94,
+        width: 216.07,
+        display: "flex", flexDirection: "column", alignItems: "center", gap: 5.6,
+      }}>
+        {/* Text */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2.33, width: "100%" }}>
+          <span style={{ fontSize: 14.47, fontWeight: 600, letterSpacing: "-0.02em", color: "#0A0A0A", textAlign: "center", lineHeight: "16px", display: "block", width: "100%" }}>
+            {headline}
+          </span>
+          <span style={{ fontSize: 8.4, fontWeight: 400, letterSpacing: "-0.02em", color: "#404040", textAlign: "center", lineHeight: "9px", display: "block", width: "100%" }}>
+            {subtitle}
+          </span>
+        </div>
+
+        {/* Stars */}
+        {showStars && (
+          <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 7.47 }}>
+            {[0,1,2,3,4].map(i => (
+              <div key={i} style={{ width: 11.2, height: 11.2, background: "#EFB841", border: "0.35px solid #E2A013", borderRadius: 1 }} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -2184,21 +2222,16 @@ function MaterialCard({
 
         {/* Right: preview box */}
         <div style={{
-          width: 252, flexShrink: 0, borderRadius: 14, overflow: "hidden",
-          border: `1px solid ${t.border}`,
-          background: format === "image" ? "#FFFFFF" : t.bgTertiary,
+          width: 252, height: 252, flexShrink: 0,
+          borderRadius: 14, overflow: "hidden",
+          background: t.bgTertiary,
           display: "flex", alignItems: "center", justifyContent: "center",
-          minHeight: 252,
         }}>
           {format === "qr" ? (
             <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 12 }}>
               <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={164} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
             </div>
-          ) : (
-            <div style={{ width: "100%", height: "100%", minHeight: 280, position: "relative" }}>
-              {imagePreview}
-            </div>
-          )}
+          ) : imagePreview}
         </div>
       </div>
     </div>
@@ -2255,6 +2288,7 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
                 linkPlaceholder="https://shipday.com/sms/subscribe/your-store"
                 onToast={show}
                 imagePreview={<BrandedFlyer qrValue="https://shipday.com/sms/subscribe/your-store" headline="Get exclusive deals by text" subtitle="Scan the QR code to receive SMS with offers, coupons and rewards." />}
+
               />
             </div>
           ) : activeTab === "reviews" ? (
@@ -2265,14 +2299,7 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
                 linkLabel="URL destination"
                 linkPlaceholder="https://g.page/r/your-business/review"
                 onToast={show}
-                imagePreview={
-                  <BrandedFlyer
-                    qrValue="https://g.page/r/your-business/review"
-                    headline="How was your experience?"
-                    subtitle="Scan the QR code to leave us a review."
-                    extra={<span style={{ fontSize: 18, letterSpacing: 2, marginTop: 2 }}>★★★★★</span>}
-                  />
-                }
+                imagePreview={<BrandedFlyer qrValue="https://g.page/r/your-business/review" headline="How was your experience?" subtitle="Scan the QR code to leave us a review." showStars />}
               />
             </div>
           ) : (
