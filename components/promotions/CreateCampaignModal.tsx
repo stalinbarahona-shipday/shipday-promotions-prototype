@@ -352,7 +352,7 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>Your business</span>
                 </div>
                 {/* Message area */}
-                <div style={{ padding: "16px 14px", minHeight: 160, background: "#FFFFFF" }}>
+                <div style={{ padding: "16px 14px", minHeight: 300, background: "#FFFFFF" }}>
                   <div style={{ background: "#E9E9EB", borderRadius: "16px 16px 16px 4px", padding: "10px 13px", maxWidth: "88%", display: "inline-block" }}>
                     <p style={{ fontSize: 13, color: message.trim() ? "#0A0A0A" : "#6B6B6B", margin: 0, lineHeight: "148%", wordBreak: "break-word" }}>
                       {message.trim() || "Your message will appear here once you start creating your campaign."}
