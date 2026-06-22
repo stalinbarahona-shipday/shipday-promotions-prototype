@@ -2092,63 +2092,46 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
    TAB 1 — QR CODES & TEMPLATES
 ══════════════════════════════════════════════ */
 
-function SmsSubscriberFlyer({ qrValue }: { qrValue: string }) {
+function BrandedFlyer({ qrValue, headline, subtitle, extra }: {
+  qrValue: string;
+  headline: string;
+  subtitle: string;
+  extra?: React.ReactNode;
+}) {
   return (
-    <div style={{
-      width: 240, background: "#FFFFFF", borderRadius: 16,
-      overflow: "hidden", position: "relative",
-      display: "flex", flexDirection: "column", alignItems: "center",
-      boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
-      paddingBottom: 148,
-    }}>
+    <div style={{ width: "100%", height: "100%", background: "#FFFFFF", position: "relative", display: "flex", flexDirection: "column", alignItems: "center", overflow: "hidden" }}>
       {/* Top content */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px 16px", gap: 8, position: "relative", zIndex: 1 }}>
-        {/* Logo placeholder circle */}
-        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#C8352A", border: "3px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
-          <span style={{ color: "#fff", fontWeight: 900, fontSize: 16, letterSpacing: "-0.03em" }}>K</span>
-        </div>
-        <p style={{ fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: "1.3" }}>
-          Get exclusive deals by text
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 20px 0", gap: 8, position: "relative", zIndex: 1 }}>
+        <span style={{ fontSize: 38 }}>🌐</span>
+        <p style={{ fontSize: 15, fontWeight: 800, textAlign: "center", margin: 0, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: "1.3" }}>
+          {headline}
         </p>
-        <p style={{ fontSize: 12, color: "#525252", textAlign: "center", margin: 0, lineHeight: "1.55", padding: "0 4px" }}>
-          Scan the QR code to receive SMS with offers, coupons and rewards.
+        <p style={{ fontSize: 11, color: "#525252", textAlign: "center", margin: 0, lineHeight: "1.55", padding: "0 8px" }}>
+          {subtitle}
         </p>
+        {extra}
       </div>
 
       {/* Green dome */}
-      <div style={{
-        position: "absolute", bottom: 0,
-        width: "160%", left: "-30%",
-        height: 170,
-        background: "#008062",
-        borderRadius: "50% 50% 0 0",
-      }} />
+      <div style={{ position: "absolute", bottom: 0, width: "160%", left: "-30%", height: "58%", background: "#008062", borderRadius: "50% 50% 0 0" }} />
 
       {/* QR card — overlaps dome */}
-      <div style={{
-        position: "absolute", bottom: 20, zIndex: 2,
-        background: "#FFFFFF", borderRadius: 14,
-        padding: "10px 10px 8px",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
-      }}>
-        <QRCodeSVG value={toQrUrl(qrValue)} size={108} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+      <div style={{ position: "absolute", bottom: 16, zIndex: 2, background: "#FFFFFF", borderRadius: 12, padding: "8px 8px 6px", boxShadow: "0 4px 16px rgba(0,0,0,0.14)" }}>
+        <QRCodeSVG value={toQrUrl(qrValue)} size={96} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
       </div>
     </div>
   );
 }
 
 function MaterialCard({
-  title, description, linkLabel, linkPlaceholder,
-  formatLabel, qrOptionLabel, imageOptionLabel, onToast,
-  imagePreview,
+  title, description, linkLabel, linkPlaceholder, onToast, imagePreview,
 }: {
   title: string; description: string; linkLabel: string; linkPlaceholder: string;
-  formatLabel: string; qrOptionLabel: string; imageOptionLabel: string;
   onToast: (msg: string, icon?: string) => void;
-  imagePreview?: React.ReactNode;
+  imagePreview: React.ReactNode;
 }) {
   const t = useTheme();
-  const [format, setFormat] = useState<"qr" | "image">("qr");
+  const [format, setFormat] = useState<"qr" | "image">("image");
   const [downloading, setDownloading] = useState(false);
 
   const handleDownload = () => {
@@ -2159,53 +2142,51 @@ function MaterialCard({
 
   return (
     <div style={{ width: "100%", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 16, overflow: "hidden", transition: "background 200ms ease, border 200ms ease" }}>
-      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: 24, gap: 32, borderBottom: `1px solid ${t.border}` }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", padding: 24, gap: 32, borderBottom: `1px solid ${t.border}` }}>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 4 }}>
           <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, lineHeight: "140%" }}>{title}</span>
           <span style={{ fontSize: 16, fontWeight: 350, color: t.textSecondary, lineHeight: "150%" }}>{description}</span>
         </div>
-        <button onClick={handleDownload} disabled={downloading} style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", padding: "12px 20px 12px 16px", gap: 8, height: 48, background: downloading ? t.border : t.accent, border: "none", borderRadius: 8, cursor: downloading ? "default" : "pointer", flexShrink: 0, transition: "background 200ms ease", fontFamily: "inherit" }}>
+        <button onClick={handleDownload} disabled={downloading} style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 20px 12px 16px", gap: 8, height: 48, background: downloading ? t.border : t.accent, border: "none", borderRadius: 8, cursor: downloading ? "default" : "pointer", flexShrink: 0, transition: "background 200ms ease", fontFamily: "inherit" }}>
           {downloading
-            ? <><DownloadSpinner /><span style={{ fontSize: 16, fontWeight: 500, color: t.textMuted, lineHeight: "24px" }}>Preparing…</span></>
-            : <><Icon name="download" size={24} color="#FFFFFF" /><span style={{ fontSize: 16, fontWeight: 500, color: "#FFFFFF", lineHeight: "24px" }}>Download</span></>
-          }
+            ? <><DownloadSpinner /><span style={{ fontSize: 16, fontWeight: 500, color: t.textMuted }}>Preparing…</span></>
+            : <><Icon name="download" size={24} color="#FFFFFF" /><span style={{ fontSize: 16, fontWeight: 500, color: "#FFFFFF" }}>Download</span></>}
         </button>
       </div>
-      <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", padding: 24, gap: 56 }}>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", padding: "8px 0px", gap: 32 }}>
+
+      {/* Body: form left, preview right */}
+      <div style={{ display: "flex", alignItems: "stretch" }}>
+        {/* Left: form */}
+        <div style={{ flex: 1, padding: 24, display: "flex", flexDirection: "column", gap: 28 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: "-0.02em", color: t.text, lineHeight: "24px" }}>{linkLabel}</span>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", padding: 16, gap: 12, background: t.bgTertiary, borderRadius: 10, height: 48 }}>
-              <span style={{ fontSize: 16, fontWeight: 400, color: t.textMuted, letterSpacing: "0.02em" }}>{linkPlaceholder}</span>
+            <span style={{ fontSize: 16, fontWeight: 500, color: t.text }}>URL destination</span>
+            <div style={{ display: "flex", alignItems: "center", padding: "0 16px", background: t.bgTertiary, borderRadius: 10, height: 48 }}>
+              <span style={{ fontSize: 15, color: t.textMuted }}>{linkPlaceholder}</span>
             </div>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <span style={{ fontSize: 16, fontWeight: 500, letterSpacing: "-0.02em", color: t.text, lineHeight: "24px" }}>{formatLabel}</span>
-            <div style={{ display: "flex", flexDirection: "row", gap: 16 }}>
-              <div onClick={() => setFormat("qr")} style={{ flex: 1, display: "flex", flexDirection: "row", alignItems: "center", padding: 16, gap: 10, height: 56, background: format === "qr" ? t.accentLight : t.surface, border: `1px solid ${format === "qr" ? t.accent : t.border}`, borderRadius: 12, cursor: "pointer", transition: "background 200ms ease, border 200ms ease" }}>
-                <Icon name="qr_code_2" size={24} color={t.textMuted} />
-                <span style={{ fontSize: 16, fontWeight: 500, color: t.text }}>{qrOptionLabel}</span>
+            <span style={{ fontSize: 16, fontWeight: 500, color: t.text }}>Design style</span>
+            <div style={{ display: "flex", gap: 16 }}>
+              <div onClick={() => setFormat("qr")} style={{ flex: 1, display: "flex", alignItems: "center", padding: 16, gap: 10, height: 56, background: format === "qr" ? t.accentLight : t.surface, border: `1px solid ${format === "qr" ? t.accent : t.border}`, borderRadius: 12, cursor: "pointer", transition: "all 150ms ease" }}>
+                <Icon name="qr_code_2" size={22} color={t.textMuted} />
+                <span style={{ fontSize: 15, fontWeight: 500, color: t.text }}>Only QR code</span>
               </div>
-              <div onClick={() => setFormat("image")} style={{ flex: 1, display: "flex", flexDirection: "row", alignItems: "center", padding: 16, gap: 10, height: 56, background: format === "image" ? t.accentLight : t.surface, border: `1px solid ${format === "image" ? t.accent : t.border}`, borderRadius: 12, cursor: "pointer", transition: "background 200ms ease, border 200ms ease" }}>
-                <Icon name="add_photo_alternate" size={24} color={t.textMuted} />
-                <span style={{ fontSize: 16, fontWeight: 500, color: t.text }}>{imageOptionLabel}</span>
+              <div onClick={() => setFormat("image")} style={{ flex: 1, display: "flex", alignItems: "center", padding: 16, gap: 10, height: 56, background: format === "image" ? t.accentLight : t.surface, border: `1px solid ${format === "image" ? t.accent : t.border}`, borderRadius: 12, cursor: "pointer", transition: "all 150ms ease" }}>
+                <Icon name="add_photo_alternate" size={22} color={t.textMuted} />
+                <span style={{ fontSize: 15, fontWeight: 500, color: t.text }}>Branded template</span>
               </div>
             </div>
           </div>
         </div>
-        <div style={{
-          width: 252, minHeight: 252,
-          background: format === "image" && imagePreview ? "transparent" : t.bgTertiary,
-          borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, transition: "background 200ms ease",
-        }}>
+
+        {/* Right: preview */}
+        <div style={{ width: 260, borderLeft: `1px solid ${t.border}`, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: format === "image" ? "#FFFFFF" : t.bgTertiary, overflow: "hidden" }}>
           {format === "qr" ? (
             <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 12 }}>
-              <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={164} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+              <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={148} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
             </div>
-          ) : imagePreview ? imagePreview : (
-            <Icon name="image" size={80} color={t.border} />
-          )}
+          ) : imagePreview}
         </div>
       </div>
     </div>
@@ -2233,8 +2214,8 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
         <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "32px 64px 0px", gap: 20, borderBottom: `1px solid ${t.border}`, background: t.bg, zIndex: 10 }}>
           <div style={{ display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", width: "100%" }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, lineHeight: "40px", margin: 0 }}>Marketing materials</h1>
-              <span style={{ fontSize: 16, fontWeight: 350, color: t.textSecondary, lineHeight: "150%" }}>Create QR codes and flyers to promote your business and engage customers</span>
+              <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, lineHeight: "40px", margin: 0 }}>Print Promotions</h1>
+              <span style={{ fontSize: 16, fontWeight: 350, color: t.textSecondary, lineHeight: "150%" }}>Create print-ready flyers to grow your direct ordering and build customer loyalty.</span>
             </div>
             <button onClick={toggleDark} style={{ width: 40, height: 40, display: "flex", alignItems: "center", justifyContent: "center", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 10, cursor: "pointer", flexShrink: 0, transition: "background 200ms ease, border 200ms ease" }}>
               <Icon name={t.mode === "dark" ? "light_mode" : "dark_mode"} size={20} color={t.mode === "dark" ? "#F59E0B" : "#525252"} />
@@ -2255,11 +2236,32 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
         <div className="[&::-webkit-scrollbar]:hidden" style={{ flex: 1, overflowY: "auto", scrollbarWidth: "none" }}>
           {activeTab === "sms" ? (
             <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
-              <MaterialCard title="Collect SMS marketing subscribers" description="Let customers opt in to SMS promotions by scanning a code or clicking a link" linkLabel="Opt-in link" linkPlaceholder="https://shipday.com/sms/subscribe/your-store" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} imagePreview={<SmsSubscriberFlyer qrValue="https://shipday.com/sms/subscribe/your-store" />} />
+              <MaterialCard
+                title="Collect SMS marketing subscribers"
+                description="Make it easy for your customers to subscribe to your SMS campaigns by scanning a QR code."
+                linkLabel="URL destination"
+                linkPlaceholder="https://shipday.com/sms/subscribe/your-store"
+                onToast={show}
+                imagePreview={<BrandedFlyer qrValue="https://shipday.com/sms/subscribe/your-store" headline="Get exclusive deals by text" subtitle="Scan the QR code to receive SMS with offers, coupons and rewards." />}
+              />
             </div>
           ) : activeTab === "reviews" ? (
             <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
-              <MaterialCard title="Collect reviews by QR Code" description="Share a QR code or image that takes customers directly to your review page" linkLabel="Review page link" linkPlaceholder="https://g.page/r/your-business/review" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} />
+              <MaterialCard
+                title="Collect reviews by QR Code"
+                description="Make it easy for your customers to leave a review by scanning a QR code."
+                linkLabel="URL destination"
+                linkPlaceholder="https://g.page/r/your-business/review"
+                onToast={show}
+                imagePreview={
+                  <BrandedFlyer
+                    qrValue="https://g.page/r/your-business/review"
+                    headline="How was your experience?"
+                    subtitle="Scan the QR code to leave us a review."
+                    extra={<span style={{ fontSize: 18, letterSpacing: 2, marginTop: 2 }}>★★★★★</span>}
+                  />
+                }
+              />
             </div>
           ) : (
             <FlyersContent onToast={show} initialAccount={account} />

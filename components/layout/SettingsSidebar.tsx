@@ -62,7 +62,7 @@ const menuEntries: MenuEntry[] = [
       children: [
         { label: "SMS Promotions", path: "promotions/sms" },
         { label: "Tracking Page Promotions", path: "promotions/tracking" },
-        { label: "Marketing materials", path: "marketing", badge: "New" },
+        { label: "Print Promotions", path: "marketing", badge: "New" },
       ],
     },
   },
