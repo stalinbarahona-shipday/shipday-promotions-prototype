@@ -181,8 +181,8 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
           overflow: "hidden",
         }}
       >
-        {/* ── Header — no divider, title in body flow ── */}
-        <div style={{ padding: "32px 48px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
+        {/* ── Header ── */}
+        <div style={{ padding: "36px 56px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
             <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, margin: 0, lineHeight: "34px" }}>
               Create Campaign
@@ -193,17 +193,17 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
           </div>
           <button
             onClick={onClose}
-            style={{ width: 36, height: 36, borderRadius: 99, border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 4 }}
+            style={{ width: 36, height: 36, borderRadius: 99, border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}
           >
             <X size={22} color={t.textMuted} />
           </button>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ display: "flex", flex: 1, overflow: "hidden", marginTop: 28 }}>
+        <div style={{ display: "flex", flex: 1, overflow: "hidden", marginTop: 32 }}>
 
           {/* Left — form */}
-          <div style={{ flex: 1, padding: "0 48px 32px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 28 }}>
+          <div style={{ flex: 1, padding: "0 56px 32px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 24 }}>
 
             {/* Campaign name */}
             <Field label="Campaign name">
@@ -308,7 +308,7 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
           </div>
 
           {/* Right — SMS preview */}
-          <div style={{ width: 380, borderLeft: `1px solid ${t.border}`, padding: "0 40px 32px", display: "flex", flexDirection: "column", gap: 12, flexShrink: 0, background: t.bg, overflowY: "auto" }}>
+          <div style={{ width: 380, borderLeft: `1px solid ${t.border}`, padding: "0 36px 32px", display: "flex", flexDirection: "column", gap: 10, flexShrink: 0, background: "#FFFFFF", overflowY: "auto" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 2 }}>
               <span style={{ fontSize: 17, fontWeight: 700, color: t.text }}>SMS Preview</span>
               <button style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: t.accent, padding: 0, fontFamily: "inherit" }}>
@@ -321,44 +321,57 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
             </p>
 
             {/* Phone mockup */}
-            <div style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 12 }}>
-              <div style={{ width: 260, background: "#FFFFFF", borderRadius: 40, boxShadow: "0 0 0 8px #E5E7EB, 0 16px 48px rgba(0,0,0,0.12)", overflow: "hidden", fontFamily: "system-ui, sans-serif" }}>
-                <div style={{ padding: "16px 22px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F9F9F9" }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16 }}>
+              <div style={{
+                width: 270,
+                background: "#FFFFFF",
+                borderRadius: 22,
+                border: "1.5px solid #D1D5DB",
+                boxShadow: "0 4px 24px rgba(0,0,0,0.09)",
+                overflow: "hidden",
+                fontFamily: "system-ui, sans-serif",
+              }}>
+                {/* Status bar */}
+                <div style={{ padding: "13px 18px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FAFAFA" }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>09:41</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                    <Signal size={13} color="#0A0A0A" />
-                    <Wifi size={13} color="#0A0A0A" />
-                    <Battery size={13} color="#0A0A0A" />
+                    <Signal size={12} color="#0A0A0A" />
+                    <Wifi size={12} color="#0A0A0A" />
+                    <Battery size={12} color="#0A0A0A" />
                   </div>
                 </div>
-                <div style={{ background: "#F9F9F9", borderBottom: "1px solid #E5E7EB", padding: "8px 16px 14px", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                  <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#EBFEF6", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <div style={{ width: 22, height: 22, position: "relative" }}>
-                      <div style={{ position: "absolute", width: 15, height: 15, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
-                      <div style={{ position: "absolute", width: 15, height: 15, left: 7, top: 7, background: "#ABE571", borderRadius: "50%" }} />
-                      <div style={{ position: "absolute", width: 9, height: 9, left: 7, top: 7, background: "#008062", borderRadius: "50%" }} />
+                {/* Contact header */}
+                <div style={{ background: "#FAFAFA", borderBottom: "1px solid #EBEBEB", padding: "6px 16px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#EBFEF6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 20, height: 20, position: "relative" }}>
+                      <div style={{ position: "absolute", width: 13, height: 13, left: 0, top: 0, background: "#01AD85", borderRadius: "50%" }} />
+                      <div style={{ position: "absolute", width: 13, height: 13, left: 6, top: 6, background: "#ABE571", borderRadius: "50%" }} />
+                      <div style={{ position: "absolute", width: 8, height: 8, left: 6, top: 6, background: "#008062", borderRadius: "50%" }} />
                     </div>
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>Your business</span>
                 </div>
-                <div style={{ padding: "16px 14px", minHeight: 180, background: "#FFFFFF" }}>
-                  <div style={{ background: "#E9E9EB", borderRadius: "18px 18px 18px 4px", padding: "10px 14px", maxWidth: "90%", display: "inline-block" }}>
-                    <p style={{ fontSize: 14, color: message.trim() ? "#0A0A0A" : "#737373", margin: 0, lineHeight: "150%", wordBreak: "break-word" }}>
+                {/* Message area */}
+                <div style={{ padding: "16px 14px", minHeight: 160, background: "#FFFFFF" }}>
+                  <div style={{ background: "#E9E9EB", borderRadius: "16px 16px 16px 4px", padding: "10px 13px", maxWidth: "88%", display: "inline-block" }}>
+                    <p style={{ fontSize: 13, color: message.trim() ? "#0A0A0A" : "#6B6B6B", margin: 0, lineHeight: "148%", wordBreak: "break-word" }}>
                       {message.trim() || "Your message will appear here once you start creating your campaign."}
                     </p>
                   </div>
                 </div>
-                <div style={{ borderTop: "1px solid #E5E7EB", padding: "10px 14px", display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF" }}>
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", border: "1px solid #E5E7EB", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <Plus size={14} color="#737373" />
+                {/* Input bar */}
+                <div style={{ borderTop: "1px solid #EBEBEB", padding: "9px 12px", display: "flex", alignItems: "center", gap: 8, background: "#FFFFFF" }}>
+                  <div style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid #D1D5DB", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <Plus size={13} color="#737373" />
                   </div>
-                  <div style={{ flex: 1, height: 32, background: "#F2F2F7", borderRadius: 16, display: "flex", alignItems: "center", paddingLeft: 12 }}>
-                    <span style={{ fontSize: 13, color: "#737373" }}>SMS text</span>
+                  <div style={{ flex: 1, height: 30, background: "#F2F2F7", borderRadius: 15, display: "flex", alignItems: "center", paddingLeft: 11 }}>
+                    <span style={{ fontSize: 12, color: "#9CA3AF" }}>SMS text</span>
                   </div>
-                  <Mic size={16} color="#737373" />
+                  <Mic size={15} color="#737373" />
                 </div>
-                <div style={{ padding: "8px 0 10px", display: "flex", justifyContent: "center", background: "#FFFFFF" }}>
-                  <div style={{ width: 80, height: 4, borderRadius: 4, background: "#D1D1D6" }} />
+                {/* Home indicator */}
+                <div style={{ padding: "7px 0 9px", display: "flex", justifyContent: "center", background: "#FFFFFF" }}>
+                  <div style={{ width: 72, height: 4, borderRadius: 4, background: "#D1D1D6" }} />
                 </div>
               </div>
             </div>
