@@ -156,39 +156,41 @@ function OverviewTab({
   const [view, setView] = useState<"current" | "new">("current");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px", gap: 24, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 80px", gap: 24, background: C.bg, minHeight: "100%" }}>
 
-      {/* View toggle */}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <div style={{ display: "inline-flex", background: C.bgPage, borderRadius: 10, padding: 4, gap: 2 }}>
+      {/* Floating view toggle — fixed at bottom-center, doesn't affect layout */}
+      <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 200 }}>
+        <div style={{
+          display: "inline-flex", background: C.bg, borderRadius: 99, padding: 4, gap: 2,
+          boxShadow: "0 4px 24px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08)",
+          border: `1px solid ${C.border}`,
+        }}>
           <button
             onClick={() => setView("current")}
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit",
+              padding: "8px 18px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: "inherit",
               fontSize: 13, fontWeight: 500,
-              background: view === "current" ? C.bg : "transparent",
-              color: view === "current" ? C.text : C.textMuted,
-              boxShadow: view === "current" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              background: view === "current" ? C.text : "transparent",
+              color: view === "current" ? "#fff" : C.textMuted,
               transition: "all 150ms ease",
             }}
           >
-            <LayoutGrid size={14} />
+            <LayoutGrid size={13} />
             Option A
           </button>
           <button
             onClick={() => setView("new")}
             style={{
               display: "flex", alignItems: "center", gap: 6,
-              padding: "6px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit",
+              padding: "8px 18px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: "inherit",
               fontSize: 13, fontWeight: 500,
-              background: view === "new" ? C.bg : "transparent",
-              color: view === "new" ? C.text : C.textMuted,
-              boxShadow: view === "new" ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              background: view === "new" ? C.text : "transparent",
+              color: view === "new" ? "#fff" : C.textMuted,
               transition: "all 150ms ease",
             }}
           >
-            <BarChart2 size={14} />
+            <BarChart2 size={13} />
             Option B
           </button>
         </div>

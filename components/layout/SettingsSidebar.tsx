@@ -19,14 +19,11 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
 
-// Maps sidebar path keys to actual Next.js URLs
+// Maps sidebar path keys to actual Next.js URLs (only for pages that exist)
 const PATH_TO_URL: Record<string, string> = {
-  marketing:              "/settings/dispatch",
-  "promotions/sms":       "/settings/promotions/sms",
-  "promotions/tracking":  "/settings/promotions/tracking",
-  dispatch:               "/settings/dispatch",
-  services:               "/settings/dispatch",
-  preferences:            "/settings/dispatch",
+  marketing:             "/settings/dispatch",
+  "promotions/sms":      "/settings/promotions/sms",
+  "promotions/tracking": "/settings/promotions/tracking",
 };
 
 /* ── Types ── */
