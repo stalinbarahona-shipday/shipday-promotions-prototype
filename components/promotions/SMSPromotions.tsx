@@ -452,7 +452,7 @@ function NewOverview({
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
           {["Campaign", "Date", "Delivered", "Click rate", "Revenue"].map((h, i) => (
             <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "11px 20px" }}>
-              <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>{h}</span>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>{h}</span>
             </div>
           ))}
         </div>
@@ -492,7 +492,7 @@ function NewOverview({
         <div style={{ padding: "14px 20px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "center" }}>
           <button
             onClick={() => onTabChange("Campaigns")}
-            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 13, fontWeight: 500, color: C.green, padding: 0 }}
+            style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 15, fontWeight: 600, color: C.green, padding: 0 }}
           >
             View all campaigns
           </button>
@@ -565,38 +565,32 @@ function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onA
 
             {/* Text */}
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 2 }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>{row.label}</p>
-                {row.active ? (
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#DFFDEF", color: "#03624C" }}>
-                    Active
-                  </span>
-                ) : (
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#F4F4F8", color: C.textMuted }}>
-                    Not set up
-                  </span>
-                )}
-              </div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: "0 0 2px" }}>{row.label}</p>
               <p style={{ fontSize: 14, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>{row.desc}</p>
             </div>
 
-            {/* Toggle */}
-            <button
-              onClick={row.onToggle}
-              style={{
-                width: 48, height: 28, borderRadius: 99, border: "none", flexShrink: 0,
-                background: row.active ? C.green : "#D1D5DB",
-                cursor: "pointer", position: "relative", transition: "background 200ms ease",
-              }}
-            >
-              <div style={{
-                position: "absolute", top: 3,
-                left: row.active ? 23 : 3,
-                width: 22, height: 22, borderRadius: "50%",
-                background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
-                transition: "left 200ms ease",
-              }} />
-            </button>
+            {/* Label + Toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: row.active ? C.green : C.textMuted }}>
+                {row.active ? "On" : "Off"}
+              </span>
+              <button
+                onClick={row.onToggle}
+                style={{
+                  width: 48, height: 28, borderRadius: 99, border: "none",
+                  background: row.active ? C.green : "#D1D5DB",
+                  cursor: "pointer", position: "relative", transition: "background 200ms ease",
+                }}
+              >
+                <div style={{
+                  position: "absolute", top: 3,
+                  left: row.active ? 23 : 3,
+                  width: 22, height: 22, borderRadius: "50%",
+                  background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+                  transition: "left 200ms ease",
+                }} />
+              </button>
+            </div>
           </div>
         );
       })}
