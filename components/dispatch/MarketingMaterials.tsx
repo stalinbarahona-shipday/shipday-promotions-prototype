@@ -2092,13 +2092,60 @@ function FlyersContent({ onToast, initialAccount }: { onToast: (msg: string, ico
    TAB 1 — QR CODES & TEMPLATES
 ══════════════════════════════════════════════ */
 
+function SmsSubscriberFlyer({ qrValue }: { qrValue: string }) {
+  return (
+    <div style={{
+      width: 240, background: "#FFFFFF", borderRadius: 16,
+      overflow: "hidden", position: "relative",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+      paddingBottom: 148,
+    }}>
+      {/* Top content */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "24px 20px 16px", gap: 8, position: "relative", zIndex: 1 }}>
+        {/* Logo placeholder circle */}
+        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#C8352A", border: "3px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 4 }}>
+          <span style={{ color: "#fff", fontWeight: 900, fontSize: 16, letterSpacing: "-0.03em" }}>K</span>
+        </div>
+        <p style={{ fontSize: 17, fontWeight: 800, textAlign: "center", margin: 0, color: "#0A0A0A", letterSpacing: "-0.02em", lineHeight: "1.3" }}>
+          Get exclusive deals by text
+        </p>
+        <p style={{ fontSize: 12, color: "#525252", textAlign: "center", margin: 0, lineHeight: "1.55", padding: "0 4px" }}>
+          Scan the QR code to receive SMS with offers, coupons and rewards.
+        </p>
+      </div>
+
+      {/* Green dome */}
+      <div style={{
+        position: "absolute", bottom: 0,
+        width: "160%", left: "-30%",
+        height: 170,
+        background: "#008062",
+        borderRadius: "50% 50% 0 0",
+      }} />
+
+      {/* QR card — overlaps dome */}
+      <div style={{
+        position: "absolute", bottom: 20, zIndex: 2,
+        background: "#FFFFFF", borderRadius: 14,
+        padding: "10px 10px 8px",
+        boxShadow: "0 4px 16px rgba(0,0,0,0.12)",
+      }}>
+        <QRCodeSVG value={toQrUrl(qrValue)} size={108} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
+      </div>
+    </div>
+  );
+}
+
 function MaterialCard({
   title, description, linkLabel, linkPlaceholder,
   formatLabel, qrOptionLabel, imageOptionLabel, onToast,
+  imagePreview,
 }: {
   title: string; description: string; linkLabel: string; linkPlaceholder: string;
   formatLabel: string; qrOptionLabel: string; imageOptionLabel: string;
   onToast: (msg: string, icon?: string) => void;
+  imagePreview?: React.ReactNode;
 }) {
   const t = useTheme();
   const [format, setFormat] = useState<"qr" | "image">("qr");
@@ -2146,12 +2193,17 @@ function MaterialCard({
             </div>
           </div>
         </div>
-        <div style={{ width: 252, height: 252, background: t.bgTertiary, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 200ms ease" }}>
+        <div style={{
+          width: 252, minHeight: 252,
+          background: format === "image" && imagePreview ? "transparent" : t.bgTertiary,
+          borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, transition: "background 200ms ease",
+        }}>
           {format === "qr" ? (
             <div style={{ background: "#FFFFFF", borderRadius: 10, padding: 12 }}>
               <QRCodeSVG value={toQrUrl(linkPlaceholder)} size={164} level="M" fgColor="#0A0A0A" bgColor="#FFFFFF" />
             </div>
-          ) : (
+          ) : imagePreview ? imagePreview : (
             <Icon name="image" size={80} color={t.border} />
           )}
         </div>
@@ -2203,7 +2255,7 @@ export default function MarketingMaterials({ account }: { account?: AccountData 
         <div className="[&::-webkit-scrollbar]:hidden" style={{ flex: 1, overflowY: "auto", scrollbarWidth: "none" }}>
           {activeTab === "sms" ? (
             <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
-              <MaterialCard title="Collect SMS marketing subscribers" description="Let customers opt in to SMS promotions by scanning a code or clicking a link" linkLabel="Opt-in link" linkPlaceholder="https://shipday.com/sms/subscribe/your-store" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} />
+              <MaterialCard title="Collect SMS marketing subscribers" description="Let customers opt in to SMS promotions by scanning a code or clicking a link" linkLabel="Opt-in link" linkPlaceholder="https://shipday.com/sms/subscribe/your-store" formatLabel="Format" qrOptionLabel="QR Code" imageOptionLabel="Image" onToast={show} imagePreview={<SmsSubscriberFlyer qrValue="https://shipday.com/sms/subscribe/your-store" />} />
             </div>
           ) : activeTab === "reviews" ? (
             <div style={{ display: "flex", flexDirection: "column", padding: "44px 64px", gap: 40, background: t.bg }}>
