@@ -174,7 +174,7 @@ function OverviewTab({
             }}
           >
             <LayoutGrid size={14} />
-            Current
+            Option A
           </button>
           <button
             onClick={() => setView("new")}
@@ -189,7 +189,7 @@ function OverviewTab({
             }}
           >
             <BarChart2 size={14} />
-            New
+            Option B
           </button>
         </div>
       </div>
@@ -346,7 +346,6 @@ const CARD = {
   background: "#FFFFFF",
   border: "1px solid #E3E4EB",
   borderRadius: 16,
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
   overflow: "hidden" as const,
 };
 
