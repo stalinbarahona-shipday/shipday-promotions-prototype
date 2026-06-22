@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
   X, Wifi, Battery, Signal, Mic, Plus,
   Tag, BookOpen, Gift, Calendar, Bell, Zap, PartyPopper, Users2, FileText,
-  TicketPercent, RefreshCw,
+  TicketPercent, RefreshCw, MessageSquare,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
 
@@ -181,29 +181,29 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
           overflow: "hidden",
         }}
       >
-        {/* ── Header ── */}
-        <div style={{ padding: "28px 40px 24px", borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
+        {/* ── Header — no divider, title in body flow ── */}
+        <div style={{ padding: "32px 48px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
-            <h2 style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, margin: 0 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.02em", color: t.text, margin: 0, lineHeight: "34px" }}>
               Create Campaign
             </h2>
-            <p style={{ fontSize: 15, color: t.textSecondary, margin: "4px 0 0", fontWeight: 350 }}>
+            <p style={{ fontSize: 15, color: t.textSecondary, margin: "6px 0 0", fontWeight: 400 }}>
               Pick a template or write your message to start your SMS campaign.
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{ width: 36, height: 36, borderRadius: 99, border: `1px solid ${t.border}`, background: t.bg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: 99, border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 4 }}
           >
-            <X size={18} color={t.textMuted} />
+            <X size={22} color={t.textMuted} />
           </button>
         </div>
 
         {/* ── Body ── */}
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <div style={{ display: "flex", flex: 1, overflow: "hidden", marginTop: 28 }}>
 
           {/* Left — form */}
-          <div style={{ flex: 1, padding: "36px 40px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 32, maxWidth: 720 }}>
+          <div style={{ flex: 1, padding: "0 48px 32px", overflowY: "auto", display: "flex", flexDirection: "column", gap: 28 }}>
 
             {/* Campaign name */}
             <Field label="Campaign name">
@@ -222,26 +222,26 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
               action={
                 <button
                   onClick={() => setShowTemplatePicker(true)}
-                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: `1px solid ${t.border}`, background: t.bg, cursor: "pointer", fontSize: 14, fontWeight: 600, color: t.text, fontFamily: "inherit" }}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 8, border: "none", background: "#EBFEF6", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#008062", fontFamily: "inherit" }}
                 >
-                  <FileText size={14} color={t.accent} />
+                  <FileText size={14} color="#008062" />
                   Select from templates
                 </button>
               }
             >
-              <div style={{ position: "relative" }}>
+              <div style={{ border: `1px solid ${t.border}`, borderRadius: 10, overflow: "hidden" }}>
                 <textarea
                   value={message}
                   onChange={e => setMessage(e.target.value)}
                   placeholder="Write a short message to promote an offer, event, or update. E.g. Come by this Friday for 15% off your order! yourlink.com..."
                   rows={5}
-                  style={{ width: "100%", padding: "14px 16px", border: `1px solid ${t.border}`, borderRadius: 10, fontSize: 15, color: t.text, background: t.bg, outline: "none", resize: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: "150%" }}
-                  onFocus={e => (e.currentTarget.style.borderColor = t.accent)}
-                  onBlur={e => (e.currentTarget.style.borderColor = t.border)}
+                  style={{ width: "100%", padding: "14px 16px 10px", border: "none", fontSize: 15, color: t.text, background: t.bg, outline: "none", resize: "none", fontFamily: "inherit", boxSizing: "border-box", lineHeight: "150%", display: "block" }}
                 />
-                <span style={{ position: "absolute", bottom: 12, right: 14, fontSize: 12, color: t.textMuted }}>
-                  {message.length} / 160
-                </span>
+                <div style={{ padding: "8px 14px", background: t.bgSecondary, borderTop: `1px solid ${t.border}`, display: "flex", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: 13, color: t.textMuted }}>
+                    {Math.ceil(Math.max(message.length, 1) / 160)} / 2 segments
+                  </span>
+                </div>
               </div>
             </Field>
 
@@ -283,7 +283,16 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
                   <button
                     key={opt}
                     onClick={() => setSchedule(opt)}
-                    style={{ padding: "13px 16px", border: `1px solid ${schedule === opt ? t.accent : t.border}`, borderRadius: 10, background: schedule === opt ? t.accentLight : t.bg, cursor: "pointer", fontFamily: "inherit", fontSize: 15, fontWeight: schedule === opt ? 700 : 400, color: schedule === opt ? t.accentText : t.text, transition: "all 150ms ease" }}
+                    style={{
+                      padding: "13px 16px",
+                      border: `1.5px solid ${schedule === opt ? "#0A0A0A" : t.border}`,
+                      borderRadius: 10,
+                      background: t.bg,
+                      cursor: "pointer", fontFamily: "inherit",
+                      fontSize: 15, fontWeight: schedule === opt ? 600 : 400,
+                      color: schedule === opt ? t.text : t.textSecondary,
+                      transition: "all 150ms ease",
+                    }}
                   >
                     {opt === "now" ? "Send immediately" : "Schedule date and time"}
                   </button>
@@ -299,22 +308,23 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
           </div>
 
           {/* Right — SMS preview */}
-          <div style={{ width: 360, borderLeft: `1px solid ${t.border}`, padding: "36px 32px", display: "flex", flexDirection: "column", gap: 16, flexShrink: 0, background: t.bgSecondary }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: t.text }}>SMS Preview</span>
-              <button style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 600, color: t.accent, padding: 0, fontFamily: "inherit" }}>
+          <div style={{ width: 380, borderLeft: `1px solid ${t.border}`, padding: "0 40px 32px", display: "flex", flexDirection: "column", gap: 12, flexShrink: 0, background: t.bg, overflowY: "auto" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: 2 }}>
+              <span style={{ fontSize: 17, fontWeight: 700, color: t.text }}>SMS Preview</span>
+              <button style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, color: t.accent, padding: 0, fontFamily: "inherit" }}>
+                <MessageSquare size={14} color={t.accent} />
                 Send test SMS
               </button>
             </div>
-            <p style={{ fontSize: 14, color: t.textMuted, margin: 0 }}>
+            <p style={{ fontSize: 14, color: t.textMuted, margin: 0, lineHeight: "140%" }}>
               This is how your message will appear to customers.
             </p>
 
             {/* Phone mockup */}
-            <div style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 8 }}>
-              <div style={{ width: 260, background: "#FFFFFF", borderRadius: 40, boxShadow: "0 0 0 8px #E5E7EB, 0 24px 64px rgba(0,0,0,0.18)", overflow: "hidden", fontFamily: "system-ui, sans-serif" }}>
+            <div style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 12 }}>
+              <div style={{ width: 260, background: "#FFFFFF", borderRadius: 40, boxShadow: "0 0 0 8px #E5E7EB, 0 16px 48px rgba(0,0,0,0.12)", overflow: "hidden", fontFamily: "system-ui, sans-serif" }}>
                 <div style={{ padding: "16px 22px 8px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#F9F9F9" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>9:41</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>09:41</span>
                   <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     <Signal size={13} color="#0A0A0A" />
                     <Wifi size={13} color="#0A0A0A" />
@@ -331,7 +341,7 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#0A0A0A" }}>Your business</span>
                 </div>
-                <div style={{ padding: "16px 14px", minHeight: 160, background: "#FFFFFF" }}>
+                <div style={{ padding: "16px 14px", minHeight: 180, background: "#FFFFFF" }}>
                   <div style={{ background: "#E9E9EB", borderRadius: "18px 18px 18px 4px", padding: "10px 14px", maxWidth: "90%", display: "inline-block" }}>
                     <p style={{ fontSize: 14, color: message.trim() ? "#0A0A0A" : "#737373", margin: 0, lineHeight: "150%", wordBreak: "break-word" }}>
                       {message.trim() || "Your message will appear here once you start creating your campaign."}
@@ -356,13 +366,16 @@ export default function CreateCampaignModal({ onClose, preselectedAudience }: Pr
         </div>
 
         {/* ── Footer ── */}
-        <div style={{ padding: "20px 40px", borderTop: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 12, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: "11px 24px", borderRadius: 10, border: `1px solid ${t.border}`, background: t.bg, fontSize: 15, fontWeight: 600, color: t.text, cursor: "pointer", fontFamily: "inherit" }}>
+        <div style={{ padding: "18px 48px", borderTop: `1px solid ${t.border}`, display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, flexShrink: 0 }}>
+          <button
+            onClick={onClose}
+            style={{ padding: "11px 20px", borderRadius: 10, border: "none", background: "none", fontSize: 15, fontWeight: 500, color: t.textSecondary, cursor: "pointer", fontFamily: "inherit" }}
+          >
             Cancel
           </button>
           <button
             disabled={!canLaunch}
-            style={{ padding: "11px 24px", borderRadius: 10, border: "none", background: canLaunch ? t.accent : t.border, fontSize: 15, fontWeight: 600, color: canLaunch ? "#FFFFFF" : t.textMuted, cursor: canLaunch ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "background 150ms ease" }}
+            style={{ padding: "11px 28px", borderRadius: 10, border: "none", background: canLaunch ? t.accent : "#D1D5DB", fontSize: 15, fontWeight: 600, color: canLaunch ? "#FFFFFF" : "#9CA3AF", cursor: canLaunch ? "pointer" : "not-allowed", fontFamily: "inherit", transition: "background 150ms ease" }}
           >
             Launch campaign
           </button>
