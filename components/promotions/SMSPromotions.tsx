@@ -371,10 +371,6 @@ function NewOverview({
     { label: "Unsubscribe rate", value: "1.2%",   trend: "Healthy",        up: true,  sub: "industry avg 2%", info: false, health: true  },
   ];
 
-  const SETUP_ITEMS = [
-    { icon: Sparkles,           label: "Automate campaigns",           desc: "Let AI schedule offers based on behavior.", action: onAutomate },
-    { icon: MessageCircleHeart, label: "Set up subscriber collection", desc: "Collect opt-ins from your tracking page.",  action: onSubscriber },
-  ];
 
   return (
     <>
@@ -503,39 +499,108 @@ function NewOverview({
         </div>
       </div>
 
-      {/* Setup actions */}
-      <div style={CARD}>
-        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
-          <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Setup</span>
-        </div>
-        {SETUP_ITEMS.map((item, i) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.label}
-              onClick={item.action}
-              style={{
-                display: "flex", flexDirection: "row", alignItems: "center",
-                padding: "20px 24px", gap: 20,
-                borderBottom: i < SETUP_ITEMS.length - 1 ? `1px solid ${C.border}` : "none",
-                cursor: "pointer", transition: "background 150ms ease",
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
-            >
-              <div style={{ width: 44, height: 44, background: C.bgGreen, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                <Icon size={20} color={C.green} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0, lineHeight: "140%" }}>{item.label}</p>
-                <p style={{ fontSize: 14, fontWeight: 400, color: C.textSecondary, margin: "2px 0 0", lineHeight: "140%" }}>{item.desc}</p>
-              </div>
-              <ChevronRight size={20} color="#525252" />
-            </div>
-          );
-        })}
-      </div>
+      {/* Setup */}
+      <SetupCard onSubscriber={onSubscriber} onAutomate={onAutomate} />
     </>
+  );
+}
+
+/* ── Setup card ── */
+
+function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onAutomate: () => void }) {
+  const [collecting, setCollecting] = useState(false);
+  const [managerOn, setManagerOn] = useState(false);
+
+  const rows = [
+    {
+      icon: MessageCircleHeart,
+      label: "Collecting subscribers",
+      desc: collecting
+        ? "Customers can opt in to SMS from their order tracking page."
+        : "Not collecting — customers can't subscribe to SMS yet.",
+      active: collecting,
+      onToggle: () => {
+        if (!collecting) { onSubscriber(); setCollecting(true); }
+        else setCollecting(false);
+      },
+    },
+    {
+      icon: Sparkles,
+      label: "Shipday Marketing Manager",
+      desc: managerOn
+        ? "AI is automatically scheduling and sending campaigns for you."
+        : "Off — campaigns are created and sent manually.",
+      active: managerOn,
+      onToggle: () => {
+        if (!managerOn) { onAutomate(); setManagerOn(true); }
+        else setManagerOn(false);
+      },
+    },
+  ];
+
+  return (
+    <div style={CARD}>
+      <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}` }}>
+        <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Setup</span>
+      </div>
+
+      {rows.map((row, i) => {
+        const Icon = row.icon;
+        return (
+          <div
+            key={row.label}
+            style={{
+              display: "flex", alignItems: "center", padding: "20px 24px", gap: 20,
+              borderBottom: i < rows.length - 1 ? `1px solid ${C.border}` : "none",
+            }}
+          >
+            {/* Icon */}
+            <div style={{
+              width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+              background: row.active ? C.bgGreen : "#F4F4F8",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Icon size={20} color={row.active ? C.green : C.textMuted} />
+            </div>
+
+            {/* Text */}
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 2 }}>
+                <p style={{ fontSize: 16, fontWeight: 700, color: C.text, margin: 0 }}>{row.label}</p>
+                {row.active ? (
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#DFFDEF", color: "#03624C" }}>
+                    Active
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 99, background: "#F4F4F8", color: C.textMuted }}>
+                    Not set up
+                  </span>
+                )}
+              </div>
+              <p style={{ fontSize: 14, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>{row.desc}</p>
+            </div>
+
+            {/* Toggle */}
+            <button
+              onClick={row.onToggle}
+              style={{
+                width: 48, height: 28, borderRadius: 99, border: "none", flexShrink: 0,
+                background: row.active ? C.green : "#D1D5DB",
+                cursor: "pointer", position: "relative", transition: "background 200ms ease",
+              }}
+            >
+              <div style={{
+                position: "absolute", top: 3,
+                left: row.active ? 23 : 3,
+                width: 22, height: 22, borderRadius: "50%",
+                background: "#fff", boxShadow: "0 1px 4px rgba(0,0,0,0.18)",
+                transition: "left 200ms ease",
+              }} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
