@@ -464,6 +464,55 @@ function BusinessInfoStep({ onClose, onContinue }: { onClose: () => void; onCont
             </div>
           </div>
 
+          {/* Accepted payment methods */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: text }}>Accepted payment methods</span>
+            <p style={{ fontSize: 14, color: textSec, margin: 0, lineHeight: "20px" }}>
+              Select all that apply — your AI will only use enabled methods.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 0, border: `1px solid #A7F3D4`, borderRadius: 12, overflow: "hidden" }}>
+              {/* Twilio Pay */}
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, padding: "14px 16px", background: "#EBFEF6", borderBottom: `1px solid #A7F3D4` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: "#008062", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ color: "#FFFFFF", fontWeight: 800, fontSize: 13 }}>T</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: text, display: "block" }}>Twilio Pay</span>
+                  <span style={{ fontSize: 13, color: textMuted, lineHeight: "18px" }}>Your AI collects payment directly during the call — no link or follow-up needed.</span>
+                </div>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#008062", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Check size={13} color="#FFFFFF" strokeWidth={2.5} />
+                </div>
+              </div>
+              {/* Payment links */}
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, padding: "14px 16px", background: "#EBFEF6", borderBottom: `1px solid #A7F3D4` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: "#008062", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Link2 size={18} color="#FFFFFF" strokeWidth={2} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: text, display: "block" }}>Payment links</span>
+                  <span style={{ fontSize: 13, color: textMuted, lineHeight: "18px" }}>Your AI texts the customer a secure payment link while they&apos;re on the call.</span>
+                </div>
+                <div style={{ width: 22, height: 22, borderRadius: "50%", background: "#008062", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Check size={13} color="#FFFFFF" strokeWidth={2.5} />
+                </div>
+              </div>
+              {/* Stripe */}
+              <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, padding: "14px 16px", background: "#FFFFFF" }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: "#6772E5", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ color: "#FFFFFF", fontWeight: 800, fontSize: 15, fontStyle: "italic" }}>S</span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: text, display: "block" }}>Stripe</span>
+                  <span style={{ fontSize: 13, color: "#D97706", lineHeight: "18px" }}>• Not connected</span>
+                </div>
+                <button style={{ padding: "7px 16px", borderRadius: 99, border: "none", background: "#6772E5", color: "#FFFFFF", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}>
+                  Connect
+                </button>
+              </div>
+            </div>
+          </div>
+
           {/* Allow offer codes */}
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: text }}>Allow Using Offer Codes</span>
