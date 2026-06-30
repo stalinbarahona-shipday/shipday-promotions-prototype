@@ -620,12 +620,63 @@ const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
 
 function DiscountCodesTab() {
   const [query, setQuery] = useState("");
+  const [stripeConnected, setStripeConnected] = useState(false);
   const filtered = DISCOUNT_CODES.filter(o =>
     o.code.toLowerCase().includes(query.toLowerCase())
   );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 32, background: C.bg, minHeight: "100%" }}>
+
+      {/* Connect Stripe banner */}
+      <div style={{
+        display: "flex", alignItems: "center", gap: 16,
+        padding: "16px 20px",
+        background: C.bgGreen,
+        border: `1px solid #A7F3D4`,
+        borderRadius: 14,
+      }}>
+        {/* Stripe S logo */}
+        <div style={{
+          width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+          background: "#6772E5",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>
+          <span style={{ color: "#fff", fontWeight: 900, fontSize: 20, letterSpacing: "-0.04em" }}>S</span>
+        </div>
+
+        {/* Text */}
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Stripe</p>
+          {stripeConnected ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, display: "inline-block" }} />
+              <span style={{ fontSize: 13, color: C.green, fontWeight: 500 }}>Connected</span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#F59E0B", display: "inline-block" }} />
+              <span style={{ fontSize: 13, color: "#F59E0B", fontWeight: 500 }}>Not connected</span>
+            </div>
+          )}
+        </div>
+
+        {/* Connect / Disconnect button */}
+        <button
+          onClick={() => setStripeConnected(v => !v)}
+          style={{
+            padding: "10px 22px", borderRadius: 99,
+            background: stripeConnected ? C.bg : "#0A0A0A",
+            border: stripeConnected ? `1px solid ${C.border}` : "none",
+            color: stripeConnected ? C.text : "#fff",
+            cursor: "pointer", fontFamily: "inherit",
+            fontSize: 14, fontWeight: 700,
+            flexShrink: 0,
+          }}
+        >
+          {stripeConnected ? "Disconnect" : "Connect"}
+        </button>
+      </div>
 
       {/* Header row */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
