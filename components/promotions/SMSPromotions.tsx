@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Megaphone, Users, Sparkles, MessageCircleHeart,
-  ChevronRight, Info, Plus, TrendingUp, TrendingDown,
+  ChevronRight, ChevronDown, Info, Plus, TrendingUp, TrendingDown,
   UserPlus, Crown, RefreshCw, ShoppingBag, Moon, ThumbsDown, MapPin,
   Search,
 } from "lucide-react";
@@ -60,6 +60,8 @@ export default function SMSPromotions() {
   const [showModal, setShowModal] = useState(false);
   const [showAutomateModal, setShowAutomateModal] = useState(false);
   const [showSubscriberModal, setShowSubscriberModal] = useState(false);
+  const [collecting, setCollecting] = useState(false);
+  const [managerOn, setManagerOn] = useState(false);
 
   return (
     <>
@@ -68,10 +70,22 @@ export default function SMSPromotions() {
         {/* ── Section header ── */}
         <div style={{ background: C.bg, borderBottom: `1px solid ${C.border}` }}>
           {/* Title */}
-          <div style={{ padding: "32px 64px 0px" }}>
+          <div style={{ padding: "32px 64px 0px", display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em", color: C.text, margin: 0, lineHeight: "36px" }}>
               SMS Promotions
             </h1>
+            {collecting && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", background: C.bgGreen, borderRadius: 99, fontSize: 12, fontWeight: 600, color: C.greenActive }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, flexShrink: 0 }} />
+                Collecting SMS
+              </span>
+            )}
+            {managerOn && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", background: C.bgGreen, borderRadius: 99, fontSize: 12, fontWeight: 600, color: C.greenActive }}>
+                <Sparkles size={11} color={C.green} />
+                AI Manager
+              </span>
+            )}
           </div>
 
           {/* Tabs */}
@@ -109,6 +123,10 @@ export default function SMSPromotions() {
               onSubscriber={() => setShowSubscriberModal(true)}
               onNewCampaign={() => setShowModal(true)}
               onTabChange={setActiveTab}
+              collecting={collecting}
+              managerOn={managerOn}
+              onCollectingChange={setCollecting}
+              onManagerChange={setManagerOn}
             />
           )}
           {activeTab === "Audiences" && <AudiencesTab onNewCampaign={() => setShowModal(true)} />}
@@ -136,15 +154,17 @@ const RECENT_CAMPAIGNS = [
 ];
 
 function OverviewTab({
-  onAutomate,
-  onSubscriber,
-  onNewCampaign,
-  onTabChange,
+  onAutomate, onSubscriber, onNewCampaign, onTabChange,
+  collecting, managerOn, onCollectingChange, onManagerChange,
 }: {
   onAutomate: () => void;
   onSubscriber: () => void;
   onNewCampaign: () => void;
   onTabChange: (tab: Tab) => void;
+  collecting: boolean;
+  managerOn: boolean;
+  onCollectingChange: (v: boolean) => void;
+  onManagerChange: (v: boolean) => void;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 24, background: C.bg, minHeight: "100%" }}>
@@ -153,6 +173,10 @@ function OverviewTab({
         onSubscriber={onSubscriber}
         onNewCampaign={onNewCampaign}
         onTabChange={onTabChange}
+        collecting={collecting}
+        managerOn={managerOn}
+        onCollectingChange={onCollectingChange}
+        onManagerChange={onManagerChange}
       />
     </div>
   );
@@ -294,15 +318,17 @@ const CARD = {
 };
 
 function NewOverview({
-  onAutomate,
-  onSubscriber,
-  onNewCampaign,
-  onTabChange,
+  onAutomate, onSubscriber, onNewCampaign, onTabChange,
+  collecting, managerOn, onCollectingChange, onManagerChange,
 }: {
   onAutomate: () => void;
   onSubscriber: () => void;
   onNewCampaign: () => void;
   onTabChange: (tab: Tab) => void;
+  collecting: boolean;
+  managerOn: boolean;
+  onCollectingChange: (v: boolean) => void;
+  onManagerChange: (v: boolean) => void;
 }) {
   const [period, setPeriod] = useState("30");
 
@@ -320,20 +346,24 @@ function NewOverview({
       <div style={CARD}>
         <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span style={{ fontSize: 18, fontWeight: 800, color: "#262626" }}>Performance</span>
-          <select
-            value={period}
-            onChange={e => setPeriod(e.target.value)}
-            style={{
-              fontSize: 13, fontWeight: 500, color: C.text,
-              border: `1px solid ${C.border}`, borderRadius: 10,
-              padding: "6px 12px", background: C.bg,
-              cursor: "pointer", fontFamily: "inherit", outline: "none",
-            }}
-          >
-            <option value="7">Last 7 days</option>
-            <option value="30">Last 30 days</option>
-            <option value="90">Last 90 days</option>
-          </select>
+          <div style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+            <select
+              value={period}
+              onChange={e => setPeriod(e.target.value)}
+              style={{
+                fontSize: 13, fontWeight: 500, color: C.text,
+                border: `1px solid ${C.border}`, borderRadius: 10,
+                padding: "6px 32px 6px 12px", background: C.bg,
+                cursor: "pointer", fontFamily: "inherit", outline: "none",
+                appearance: "none", WebkitAppearance: "none",
+              }}
+            >
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
+            </select>
+            <ChevronDown size={14} color={C.textMuted} style={{ position: "absolute", right: 10, pointerEvents: "none" }} />
+          </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "row", alignItems: "stretch" }}>
@@ -442,17 +472,31 @@ function NewOverview({
       </div>
 
       {/* Setup */}
-      <SetupCard onSubscriber={onSubscriber} onAutomate={onAutomate} />
+      <SetupCard
+        onSubscriber={onSubscriber}
+        onAutomate={onAutomate}
+        collecting={collecting}
+        managerOn={managerOn}
+        onCollectingChange={onCollectingChange}
+        onManagerChange={onManagerChange}
+      />
     </>
   );
 }
 
 /* ── Setup card ── */
 
-function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onAutomate: () => void }) {
-  const [collecting, setCollecting] = useState(false);
-  const [managerOn, setManagerOn] = useState(false);
-
+function SetupCard({
+  onSubscriber, onAutomate,
+  collecting, managerOn, onCollectingChange, onManagerChange,
+}: {
+  onSubscriber: () => void;
+  onAutomate: () => void;
+  collecting: boolean;
+  managerOn: boolean;
+  onCollectingChange: (v: boolean) => void;
+  onManagerChange: (v: boolean) => void;
+}) {
   const rows = [
     {
       icon: MessageCircleHeart,
@@ -462,8 +506,8 @@ function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onA
         : "Not collecting — customers can't subscribe to SMS yet.",
       active: collecting,
       onToggle: () => {
-        if (!collecting) { onSubscriber(); setCollecting(true); }
-        else setCollecting(false);
+        if (!collecting) { onSubscriber(); onCollectingChange(true); }
+        else onCollectingChange(false);
       },
     },
     {
@@ -474,8 +518,8 @@ function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onA
         : "Off — campaigns are created and sent manually.",
       active: managerOn,
       onToggle: () => {
-        if (!managerOn) { onAutomate(); setManagerOn(true); }
-        else setManagerOn(false);
+        if (!managerOn) { onAutomate(); onManagerChange(true); }
+        else onManagerChange(false);
       },
     },
   ];
