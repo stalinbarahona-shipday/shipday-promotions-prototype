@@ -662,20 +662,22 @@ function DiscountCodesTab() {
         </div>
 
         {/* Connect / Disconnect button */}
-        <button
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setStripeConnected(v => !v)}
           style={{
             padding: "10px 22px", borderRadius: 99,
-            background: stripeConnected ? C.bg : "#0A0A0A",
+            backgroundColor: stripeConnected ? "transparent" : "#6772E5",
             border: stripeConnected ? `1px solid ${C.border}` : "none",
             color: stripeConnected ? C.text : "#fff",
             cursor: "pointer", fontFamily: "inherit",
             fontSize: 14, fontWeight: 700,
-            flexShrink: 0,
+            flexShrink: 0, userSelect: "none",
           }}
         >
           {stripeConnected ? "Disconnect" : "Connect"}
-        </button>
+        </div>
       </div>
 
       {/* Header row */}

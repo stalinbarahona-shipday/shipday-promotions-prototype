@@ -506,9 +506,9 @@ function BusinessInfoStep({ onClose, onContinue }: { onClose: () => void; onCont
                   <span style={{ fontSize: 15, fontWeight: 600, color: text, display: "block" }}>Stripe</span>
                   <span style={{ fontSize: 13, color: "#D97706", lineHeight: "18px" }}>• Not connected</span>
                 </div>
-                <button style={{ padding: "7px 16px", borderRadius: 99, border: "none", backgroundColor: "#6772E5", color: "#FFFFFF", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, appearance: "none", WebkitAppearance: "none" }}>
+                <div role="button" tabIndex={0} style={{ padding: "7px 16px", borderRadius: 99, backgroundColor: "#6772E5", color: "#FFFFFF", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", flexShrink: 0, userSelect: "none" }}>
                   Connect
-                </button>
+                </div>
               </div>
             </div>
           </div>
