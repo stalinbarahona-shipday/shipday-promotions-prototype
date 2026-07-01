@@ -90,7 +90,7 @@ export default function SMSPromotions() {
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "12px 16px", flex: 1 }}>
-                    <span style={{ fontSize: 16, fontWeight: isActive ? 500 : 400, color: isActive ? C.greenActive : C.textInactive, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 15, fontWeight: isActive ? 500 : 400, color: isActive ? C.greenActive : C.textInactive, whiteSpace: "nowrap" }}>
                       {tab}
                     </span>
                   </div>
@@ -393,7 +393,7 @@ function NewOverview({
         {/* Table header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
           {["Campaign", "Date", "Delivered", "Click rate", "Revenue"].map((h, i) => (
-            <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "11px 20px" }}>
+            <div key={h} style={{ flex: i === 0 ? 2 : 1, padding: "14px 24px" }}>
               <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>{h}</span>
             </div>
           ))}
@@ -412,19 +412,19 @@ function NewOverview({
             onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
           >
-            <div style={{ flex: 2, padding: "15px 20px" }}>
+            <div style={{ flex: 2, padding: "15px 24px" }}>
               <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{c.name}</span>
             </div>
-            <div style={{ flex: 1, padding: "15px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 24px" }}>
               <span style={{ fontSize: 14, color: C.textSecondary }}>{c.date}</span>
             </div>
-            <div style={{ flex: 1, padding: "15px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 24px" }}>
               <span style={{ fontSize: 14, color: C.text }}>{c.delivered}</span>
             </div>
-            <div style={{ flex: 1, padding: "15px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 24px" }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: C.green }}>{c.clickRate}</span>
             </div>
-            <div style={{ flex: 1, padding: "15px 20px" }}>
+            <div style={{ flex: 1, padding: "15px 24px" }}>
               <span style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{c.revenue}</span>
             </div>
           </div>
@@ -562,19 +562,12 @@ const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
 
 function DiscountCodesTab() {
   const [query, setQuery] = useState("");
-  const [copied, setCopied] = useState<string | null>(null);
   const filtered = DISCOUNT_CODES.filter(o =>
     o.code.toLowerCase().includes(query.toLowerCase())
   );
 
-  function copyCode(code: string) {
-    navigator.clipboard.writeText(code).catch(() => {});
-    setCopied(code);
-    setTimeout(() => setCopied(null), 1500);
-  }
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 32, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 32, background: C.bg, minHeight: "100%" }}>
 
       {/* Header row */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
@@ -653,23 +646,8 @@ function DiscountCodesTab() {
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
               >
-                <div style={{ flex: 1, padding: "15px 24px", display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{ flex: 1, padding: "15px 24px" }}>
                   <span style={{ fontSize: 15, fontWeight: 600, color: C.text, fontFamily: "monospace", letterSpacing: "0.02em" }}>{offer.code}</span>
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => copyCode(offer.code)}
-                    title="Copy code"
-                    style={{
-                      fontSize: 11, fontWeight: 600, color: copied === offer.code ? C.green : C.textMuted,
-                      cursor: "pointer", padding: "2px 8px", borderRadius: 6,
-                      border: `1px solid ${copied === offer.code ? C.green : C.border}`,
-                      background: copied === offer.code ? C.bgGreen : "transparent",
-                      userSelect: "none", transition: "all 150ms ease", flexShrink: 0,
-                    }}
-                  >
-                    {copied === offer.code ? "Copied!" : "Copy"}
-                  </div>
                 </div>
                 <div style={{ flex: "0 0 160px", padding: "15px 24px" }}>
                   <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{offer.discount}</span>
@@ -721,7 +699,7 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
   );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 40, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 32, background: C.bg, minHeight: "100%" }}>
 
       {/* Campaign performance card */}
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -771,7 +749,7 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
               onChange={e => setQuery(e.target.value)}
               placeholder="Search campaigns…"
               style={{
-                width: "100%", height: 38, paddingLeft: 36, paddingRight: 12,
+                width: "100%", height: 40, paddingLeft: 36, paddingRight: 12,
                 border: `1px solid ${C.border}`, borderRadius: 10,
                 fontSize: 14, fontWeight: 400, color: C.text,
                 fontFamily: "inherit", outline: "none", boxSizing: "border-box",
@@ -873,7 +851,7 @@ const AUDIENCES = [
 
 function AudiencesTab({ onNewCampaign }: { onNewCampaign: () => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 0px", gap: 32, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 32, background: C.bg, minHeight: "100%" }}>
 
       {/* Section title + button */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start" }}>
@@ -881,7 +859,7 @@ function AudiencesTab({ onNewCampaign }: { onNewCampaign: () => void }) {
           <p style={{ fontSize: 20, fontWeight: 800, color: "#262626", margin: 0, lineHeight: "140%" }}>
             Customer audiences
           </p>
-          <p style={{ fontSize: 16, fontWeight: 350, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>
+          <p style={{ fontSize: 16, fontWeight: 400, color: C.textSecondary, margin: 0, lineHeight: "140%" }}>
             Audiences are created automatically as customers subscribe to SMS.
           </p>
         </div>
@@ -890,7 +868,7 @@ function AudiencesTab({ onNewCampaign }: { onNewCampaign: () => void }) {
           style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 6, padding: "8px 16px 8px 11px", background: C.green, border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
         >
           <Plus size={16} color="#FFFFFF" />
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#FFFFFF" }}>New campaign</span>
+          <span style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>New campaign</span>
         </button>
       </div>
 
@@ -952,15 +930,15 @@ function AudiencesTab({ onNewCampaign }: { onNewCampaign: () => void }) {
               </div>
               {/* Customers */}
               <div style={{ flex: "0 0 167px", padding: "16px 24px" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>0</span>
+                <span style={{ fontSize: 16, fontWeight: 400, color: C.text }}>0</span>
               </div>
               {/* Campaigns sent */}
               <div style={{ flex: "0 0 167px", padding: "16px 24px" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>0</span>
+                <span style={{ fontSize: 16, fontWeight: 400, color: C.text }}>0</span>
               </div>
               {/* Engagement rate */}
               <div style={{ flex: 1, padding: "16px 24px" }}>
-                <span style={{ fontSize: 16, fontWeight: 350, color: C.text }}>-</span>
+                <span style={{ fontSize: 16, fontWeight: 400, color: C.text }}>-</span>
               </div>
               {/* Chevron */}
               <div style={{ flex: "0 0 72px", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 24px" }}>
