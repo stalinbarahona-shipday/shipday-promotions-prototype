@@ -5,7 +5,7 @@ import {
   Megaphone, Users, Sparkles, MessageCircleHeart,
   ChevronRight, Info, Plus, TrendingUp, TrendingDown,
   UserPlus, Crown, RefreshCw, ShoppingBag, Moon, ThumbsDown, MapPin,
-  LayoutGrid, BarChart2, Search,
+  Search,
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeContext";
 import CreateCampaignModal from "@/components/promotions/CreateCampaignModal";
@@ -60,7 +60,6 @@ export default function SMSPromotions() {
   const [showModal, setShowModal] = useState(false);
   const [showAutomateModal, setShowAutomateModal] = useState(false);
   const [showSubscriberModal, setShowSubscriberModal] = useState(false);
-  const [showBanner, setShowBanner] = useState(true);
 
   return (
     <>
@@ -106,8 +105,6 @@ export default function SMSPromotions() {
         <div style={{ flex: 1, overflowY: "auto" }}>
           {activeTab === "Overview" && (
             <OverviewTab
-              showBanner={showBanner}
-              onDismissBanner={() => setShowBanner(false)}
               onAutomate={() => setShowAutomateModal(true)}
               onSubscriber={() => setShowSubscriberModal(true)}
               onNewCampaign={() => setShowModal(true)}
@@ -139,79 +136,24 @@ const RECENT_CAMPAIGNS = [
 ];
 
 function OverviewTab({
-  showBanner,
-  onDismissBanner,
   onAutomate,
   onSubscriber,
   onNewCampaign,
   onTabChange,
 }: {
-  showBanner: boolean;
-  onDismissBanner: () => void;
   onAutomate: () => void;
   onSubscriber: () => void;
   onNewCampaign: () => void;
   onTabChange: (tab: Tab) => void;
 }) {
-  const [view, setView] = useState<"current" | "new">("current");
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 80px", gap: 24, background: C.bg, minHeight: "100%" }}>
-
-      {/* Floating view toggle — fixed at bottom-center, doesn't affect layout */}
-      <div style={{ position: "fixed", bottom: 28, left: "50%", transform: "translateX(-50%)", zIndex: 200 }}>
-        <div style={{
-          display: "inline-flex", background: C.bg, borderRadius: 99, padding: 4, gap: 2,
-          boxShadow: "0 4px 24px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.08)",
-          border: `1px solid ${C.border}`,
-        }}>
-          <button
-            onClick={() => setView("current")}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "8px 18px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 13, fontWeight: 500,
-              background: view === "current" ? C.text : "transparent",
-              color: view === "current" ? "#fff" : C.textMuted,
-              transition: "all 150ms ease",
-            }}
-          >
-            <LayoutGrid size={13} />
-            Option A
-          </button>
-          <button
-            onClick={() => setView("new")}
-            style={{
-              display: "flex", alignItems: "center", gap: 6,
-              padding: "8px 18px", borderRadius: 99, border: "none", cursor: "pointer", fontFamily: "inherit",
-              fontSize: 13, fontWeight: 500,
-              background: view === "new" ? C.text : "transparent",
-              color: view === "new" ? "#fff" : C.textMuted,
-              transition: "all 150ms ease",
-            }}
-          >
-            <BarChart2 size={13} />
-            Option B
-          </button>
-        </div>
-      </div>
-
-      {view === "current" ? (
-        <CurrentOverview
-          showBanner={showBanner}
-          onDismissBanner={onDismissBanner}
-          onAutomate={onAutomate}
-          onSubscriber={onSubscriber}
-          onTabChange={onTabChange}
-        />
-      ) : (
-        <NewOverview
-          onAutomate={onAutomate}
-          onSubscriber={onSubscriber}
-          onNewCampaign={onNewCampaign}
-          onTabChange={onTabChange}
-        />
-      )}
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 24, background: C.bg, minHeight: "100%" }}>
+      <NewOverview
+        onAutomate={onAutomate}
+        onSubscriber={onSubscriber}
+        onNewCampaign={onNewCampaign}
+        onTabChange={onTabChange}
+      />
     </div>
   );
 }
@@ -365,10 +307,10 @@ function NewOverview({
   const [period, setPeriod] = useState("30");
 
   const STATS = [
-    { label: "Revenue from SMS", value: "$3,980", trend: "+18%",          up: true,  sub: "vs last period",  info: false, health: false },
-    { label: "Subscribers",      value: "450",    trend: "+23 this month", up: true,  sub: "active opt-ins",  info: false, health: false },
-    { label: "Click rate",       value: "54%",    trend: "+6%",            up: true,  sub: "vs last period",  info: true,  health: false },
-    { label: "Unsubscribe rate", value: "1.2%",   trend: "Healthy",        up: true,  sub: "industry avg 2%", info: false, health: true  },
+    { label: "Subscribers",     value: "450", trend: "+23 this month", up: true, sub: "active opt-ins",  info: false, health: false },
+    { label: "Campaigns sent",  value: "10",  trend: "+3",             up: true, sub: "vs last period",  info: false, health: false },
+    { label: "Engagement rate", value: "54%", trend: "+6%",            up: true, sub: "vs last period",  info: true,  health: false },
+    { label: "Offers created",  value: "12",  trend: "+2",             up: true, sub: "vs last period",  info: false, health: false },
   ];
 
 
@@ -601,15 +543,15 @@ function SetupCard({ onSubscriber, onAutomate }: { onSubscriber: () => void; onA
 /* ── Discount codes tab ── */
 
 const DISCOUNT_CODES = [
-  { code: "SUMMER20",     expiry: "Dec 25, 2024", link: "https://example.com/order", status: "Active"  },
-  { code: "WINTER15",     expiry: "Jan 15, 2025", link: "https://example.com/order", status: "Active"  },
-  { code: "FALL25",       expiry: "Nov 30, 2024", link: "https://example.com/order", status: "Expired" },
-  { code: "SPRING10",     expiry: "Jun 20, 2024", link: "https://example.com/order", status: "Expired" },
-  { code: "HOLIDAY30",    expiry: "Dec 31, 2024", link: "https://example.com/order", status: "Active"  },
-  { code: "LUCKY7",       expiry: "Jul 04, 2024", link: "https://example.com/order", status: "Expired" },
-  { code: "FREEDELIVERY", expiry: "Jul 12, 2024", link: "https://example.com/order", status: "Active"  },
-  { code: "TAKE10",       expiry: "Sep 01, 2024", link: "https://example.com/order", status: "Paused"  },
-  { code: "WELCOME5",     expiry: "Ongoing",      link: "https://example.com/order", status: "Active"  },
+  { code: "SUMMER20",     discount: "20% off",       expiry: "Dec 25, 2024", used: 142, status: "Active"  },
+  { code: "WINTER15",     discount: "15% off",       expiry: "Jan 15, 2025", used: 89,  status: "Active"  },
+  { code: "FALL25",       discount: "25% off",       expiry: "Nov 30, 2024", used: 210, status: "Expired" },
+  { code: "SPRING10",     discount: "10% off",       expiry: "Jun 20, 2024", used: 67,  status: "Expired" },
+  { code: "HOLIDAY30",    discount: "30% off",       expiry: "Dec 31, 2024", used: 38,  status: "Active"  },
+  { code: "LUCKY7",       discount: "7% off",        expiry: "Jul 04, 2024", used: 154, status: "Expired" },
+  { code: "FREEDELIVERY", discount: "Free delivery", expiry: "Jul 12, 2024", used: 92,  status: "Active"  },
+  { code: "TAKE10",       discount: "10% off",       expiry: "Sep 01, 2024", used: 45,  status: "Paused"  },
+  { code: "WELCOME5",     discount: "5% off",        expiry: "Ongoing",      used: 231, status: "Active"  },
 ];
 
 const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -620,65 +562,19 @@ const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
 
 function DiscountCodesTab() {
   const [query, setQuery] = useState("");
-  const [stripeConnected, setStripeConnected] = useState(false);
+  const [copied, setCopied] = useState<string | null>(null);
   const filtered = DISCOUNT_CODES.filter(o =>
     o.code.toLowerCase().includes(query.toLowerCase())
   );
 
+  function copyCode(code: string) {
+    navigator.clipboard.writeText(code).catch(() => {});
+    setCopied(code);
+    setTimeout(() => setCopied(null), 1500);
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "40px 64px 32px", gap: 32, background: C.bg, minHeight: "100%" }}>
-
-      {/* Connect Stripe banner */}
-      <div style={{
-        display: "flex", alignItems: "center", gap: 16,
-        padding: "16px 20px",
-        background: C.bgGreen,
-        border: `1px solid #A7F3D4`,
-        borderRadius: 14,
-      }}>
-        {/* Stripe S logo */}
-        <div style={{
-          width: 44, height: 44, borderRadius: 10, flexShrink: 0,
-          background: "#6772E5",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <span style={{ color: "#fff", fontWeight: 900, fontSize: 20, letterSpacing: "-0.04em" }}>S</span>
-        </div>
-
-        {/* Text */}
-        <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 15, fontWeight: 700, color: C.text, margin: 0 }}>Stripe</p>
-          {stripeConnected ? (
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, display: "inline-block" }} />
-              <span style={{ fontSize: 13, color: C.green, fontWeight: 500 }}>Connected</span>
-            </div>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 2 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#F59E0B", display: "inline-block" }} />
-              <span style={{ fontSize: 13, color: "#F59E0B", fontWeight: 500 }}>Not connected</span>
-            </div>
-          )}
-        </div>
-
-        {/* Connect / Disconnect button */}
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => setStripeConnected(v => !v)}
-          style={{
-            padding: "10px 22px", borderRadius: 99,
-            backgroundColor: stripeConnected ? "transparent" : "#6772E5",
-            border: stripeConnected ? `1px solid ${C.border}` : "none",
-            color: stripeConnected ? C.text : "#fff",
-            cursor: "pointer", fontFamily: "inherit",
-            fontSize: 14, fontWeight: 700,
-            flexShrink: 0, userSelect: "none",
-          }}
-        >
-          {stripeConnected ? "Disconnect" : "Connect"}
-        </div>
-      </div>
 
       {/* Header row */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
@@ -721,14 +617,17 @@ function DiscountCodesTab() {
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
         {/* Header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ flex: "0 0 220px", padding: "14px 24px" }}>
+          <div style={{ flex: 1, padding: "14px 24px" }}>
             <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Code</span>
           </div>
-          <div style={{ flex: "0 0 200px", padding: "14px 24px" }}>
+          <div style={{ flex: "0 0 160px", padding: "14px 24px" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Discount</span>
+          </div>
+          <div style={{ flex: "0 0 180px", padding: "14px 24px" }}>
             <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Expiration</span>
           </div>
-          <div style={{ flex: 1, padding: "14px 24px" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Order link</span>
+          <div style={{ flex: "0 0 110px", padding: "14px 24px", textAlign: "right" }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Times used</span>
           </div>
           <div style={{ flex: "0 0 140px", padding: "14px 24px" }}>
             <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Status</span>
@@ -749,19 +648,37 @@ function DiscountCodesTab() {
                 style={{
                   display: "flex", flexDirection: "row", alignItems: "center",
                   borderBottom: i < filtered.length - 1 ? `1px solid #F4F4F8` : "none",
-                  cursor: "pointer", transition: "background 150ms ease",
+                  transition: "background 150ms ease",
                 }}
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
               >
-                <div style={{ flex: "0 0 220px", padding: "15px 24px" }}>
+                <div style={{ flex: 1, padding: "15px 24px", display: "flex", alignItems: "center", gap: 10 }}>
                   <span style={{ fontSize: 15, fontWeight: 600, color: C.text, fontFamily: "monospace", letterSpacing: "0.02em" }}>{offer.code}</span>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => copyCode(offer.code)}
+                    title="Copy code"
+                    style={{
+                      fontSize: 11, fontWeight: 600, color: copied === offer.code ? C.green : C.textMuted,
+                      cursor: "pointer", padding: "2px 8px", borderRadius: 6,
+                      border: `1px solid ${copied === offer.code ? C.green : C.border}`,
+                      background: copied === offer.code ? C.bgGreen : "transparent",
+                      userSelect: "none", transition: "all 150ms ease", flexShrink: 0,
+                    }}
+                  >
+                    {copied === offer.code ? "Copied!" : "Copy"}
+                  </div>
                 </div>
-                <div style={{ flex: "0 0 200px", padding: "15px 24px" }}>
+                <div style={{ flex: "0 0 160px", padding: "15px 24px" }}>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{offer.discount}</span>
+                </div>
+                <div style={{ flex: "0 0 180px", padding: "15px 24px" }}>
                   <span style={{ fontSize: 15, fontWeight: 400, color: C.text }}>{offer.expiry}</span>
                 </div>
-                <div style={{ flex: 1, padding: "15px 24px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 400, color: C.textMuted }}>{offer.link}</span>
+                <div style={{ flex: "0 0 110px", padding: "15px 24px", textAlign: "right" }}>
+                  <span style={{ fontSize: 15, fontWeight: 400, color: C.text }}>{offer.used}</span>
                 </div>
                 <div style={{ flex: "0 0 140px", padding: "15px 24px" }}>
                   <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
@@ -780,14 +697,14 @@ function DiscountCodesTab() {
 /* ── Campaigns tab ── */
 
 const CAMPAIGNS = [
-  { name: "Summer happy hour deal",   datetime: "Jun 28, 2025 · 5:00 PM",  recipients: 450, sent: "-",  delivered: "-",  status: "Scheduled" },
-  { name: "Weekend special - 15% off",datetime: "Jun 22, 2025 · 10:00 AM", recipients: 480, sent: 480,  delivered: 471,  status: "Sending"   },
-  { name: "20% off - Labor day",      datetime: "Apr 2, 2025 · 11:00 AM",  recipients: 450, sent: 450,  delivered: 450,  status: "Completed" },
-  { name: "Flash sale - Spring",      datetime: "Jan 20, 2025 · 2:30 PM",  recipients: 480, sent: 480,  delivered: 480,  status: "Completed" },
-  { name: "New products release",     datetime: "Feb 1, 2025 · 4:45 PM",   recipients: 510, sent: 510,  delivered: 510,  status: "Completed" },
-  { name: "Loyalty reward - June",    datetime: "Mar 12, 2024 · 9:00 AM",  recipients: 490, sent: 490,  delivered: 490,  status: "Completed" },
-  { name: "Free shipping - May",      datetime: "Dec 24, 2023 · 1:15 PM",  recipients: 460, sent: 460,  delivered: 460,  status: "Completed" },
-  { name: "Holiday season - 30% off", datetime: "Nov 5, 2023 · 3:30 PM",   recipients: 500, sent: 498,  delivered: 421,  status: "Failed"    },
+  { name: "Summer happy hour deal",   datetime: "Jun 28, 2025 · 5:00 PM",  recipients: 450, sent: "-" as string | number,  delivered: "-" as string | number,  clickRate: "-",   status: "Scheduled" },
+  { name: "Weekend special - 15% off",datetime: "Jun 22, 2025 · 10:00 AM", recipients: 480, sent: 480,  delivered: 471,  clickRate: "58%", status: "Sending"   },
+  { name: "20% off - Labor day",      datetime: "Apr 2, 2025 · 11:00 AM",  recipients: 450, sent: 450,  delivered: 450,  clickRate: "62%", status: "Completed" },
+  { name: "Flash sale - Spring",      datetime: "Jan 20, 2025 · 2:30 PM",  recipients: 480, sent: 480,  delivered: 480,  clickRate: "55%", status: "Completed" },
+  { name: "New products release",     datetime: "Feb 1, 2025 · 4:45 PM",   recipients: 510, sent: 510,  delivered: 510,  clickRate: "48%", status: "Completed" },
+  { name: "Loyalty reward - June",    datetime: "Mar 12, 2024 · 9:00 AM",  recipients: 490, sent: 490,  delivered: 490,  clickRate: "71%", status: "Completed" },
+  { name: "Free shipping - May",      datetime: "Dec 24, 2023 · 1:15 PM",  recipients: 460, sent: 460,  delivered: 460,  clickRate: "44%", status: "Completed" },
+  { name: "Holiday season - 30% off", datetime: "Nov 5, 2023 · 3:30 PM",   recipients: 500, sent: 498,  delivered: 421,  clickRate: "-",   status: "Failed"    },
 ];
 
 const CAMPAIGN_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
@@ -882,6 +799,9 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
             <div style={{ flex: "0 0 100px", padding: "14px 24px", textAlign: "right" }}>
               <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Delivered</span>
             </div>
+            <div style={{ flex: "0 0 110px", padding: "14px 24px", textAlign: "right" }}>
+              <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Click rate</span>
+            </div>
             <div style={{ flex: "0 0 140px", padding: "14px 24px" }}>
               <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Status</span>
             </div>
@@ -920,6 +840,9 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
                   </div>
                   <div style={{ flex: "0 0 100px", padding: "15px 24px", textAlign: "right" }}>
                     <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{c.delivered}</span>
+                  </div>
+                  <div style={{ flex: "0 0 110px", padding: "15px 24px", textAlign: "right" }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: c.clickRate === "-" ? C.textMuted : C.green }}>{c.clickRate}</span>
                   </div>
                   <div style={{ flex: "0 0 140px", padding: "15px 24px" }}>
                     <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
