@@ -604,14 +604,20 @@ const CODE_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   Paused:  { bg: "#FEF3C7", color: "#92400E" },
 };
 
+const CODE_FILTERS = ["All", "Active", "Expired", "Paused"] as const;
+
 function DiscountCodesTab() {
   const [query, setQuery] = useState("");
-  const filtered = DISCOUNT_CODES.filter(o =>
-    o.code.toLowerCase().includes(query.toLowerCase())
-  );
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+
+  const filtered = DISCOUNT_CODES.filter(o => {
+    const matchesQuery = o.code.toLowerCase().includes(query.toLowerCase());
+    const matchesStatus = statusFilter === "All" || o.status === statusFilter;
+    return matchesQuery && matchesStatus;
+  });
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 32, background: C.bg, minHeight: "100%" }}>
+    <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 24, background: C.bg, minHeight: "100%" }}>
 
       {/* Header row */}
       <div style={{ display: "flex", flexDirection: "row", alignItems: "flex-start", gap: 16 }}>
@@ -631,50 +637,71 @@ function DiscountCodesTab() {
         </button>
       </div>
 
-      {/* Search */}
-      <div style={{ position: "relative", maxWidth: 340 }}>
-        <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
-          <Search size={16} color={C.textMuted} />
+      {/* Search + status filters */}
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <div style={{ position: "relative", width: 280, flexShrink: 0 }}>
+          <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+            <Search size={15} color={C.textMuted} />
+          </div>
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search discount codes…"
+            style={{
+              width: "100%", height: 38, paddingLeft: 36, paddingRight: 12,
+              border: `1px solid ${C.border}`, borderRadius: 10,
+              fontSize: 14, color: C.text, fontFamily: "inherit",
+              outline: "none", boxSizing: "border-box", background: C.bg,
+            }}
+          />
         </div>
-        <input
-          value={query}
-          onChange={e => setQuery(e.target.value)}
-          placeholder="Search discount codes…"
-          style={{
-            width: "100%", height: 40, paddingLeft: 38, paddingRight: 12,
-            border: `1px solid ${C.border}`, borderRadius: 10,
-            fontSize: 14, fontWeight: 400, color: C.text,
-            fontFamily: "inherit", outline: "none", boxSizing: "border-box",
-            background: C.bg,
-          }}
-        />
+        <div style={{ display: "flex", flexDirection: "row", gap: 6 }}>
+          {CODE_FILTERS.map(f => {
+            const active = statusFilter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                style={{
+                  padding: "5px 14px", borderRadius: 99, border: "none",
+                  fontSize: 13, fontWeight: active ? 600 : 400,
+                  background: active ? C.bgGreen : "#F4F4F8",
+                  color: active ? C.greenActive : C.textSecondary,
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 150ms ease",
+                }}
+              >
+                {f}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Table */}
       <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
         {/* Header */}
         <div style={{ display: "flex", flexDirection: "row", background: "#F9FAFC", borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ flex: 1, padding: "14px 24px" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Code</span>
+          <div style={{ flex: 1, padding: "12px 24px" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>Code</span>
           </div>
-          <div style={{ flex: "0 0 160px", padding: "14px 24px" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Discount</span>
+          <div style={{ flex: "0 0 150px", padding: "12px 24px" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>Discount</span>
           </div>
-          <div style={{ flex: "0 0 180px", padding: "14px 24px" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Expiration</span>
+          <div style={{ flex: "0 0 160px", padding: "12px 24px" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>Expiration</span>
           </div>
-          <div style={{ flex: "0 0 110px", padding: "14px 24px", textAlign: "right" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Times used</span>
+          <div style={{ flex: "0 0 90px", padding: "12px 24px", textAlign: "right" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>Used</span>
           </div>
-          <div style={{ flex: "0 0 140px", padding: "14px 24px" }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: C.textMuted }}>Status</span>
+          <div style={{ flex: "0 0 140px", padding: "12px 24px" }}>
+            <span style={{ fontSize: 13, fontWeight: 500, color: C.textMuted }}>Status</span>
           </div>
         </div>
 
         {/* Rows */}
         {filtered.length === 0 ? (
           <div style={{ padding: "40px 24px", textAlign: "center" }}>
-            <span style={{ fontSize: 14, color: C.textMuted }}>No codes match &ldquo;{query}&rdquo;</span>
+            <span style={{ fontSize: 14, color: C.textMuted }}>No codes match your filters</span>
           </div>
         ) : (
           filtered.map((offer, i) => {
@@ -690,20 +717,20 @@ function DiscountCodesTab() {
                 onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = C.bgPage}
                 onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}
               >
-                <div style={{ flex: 1, padding: "15px 24px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: C.text, fontFamily: "monospace", letterSpacing: "0.02em" }}>{offer.code}</span>
+                <div style={{ flex: 1, padding: "12px 24px" }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: C.text, fontFamily: "monospace", letterSpacing: "0.02em" }}>{offer.code}</span>
                 </div>
-                <div style={{ flex: "0 0 160px", padding: "15px 24px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 500, color: C.text }}>{offer.discount}</span>
+                <div style={{ flex: "0 0 150px", padding: "12px 24px" }}>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{offer.discount}</span>
                 </div>
-                <div style={{ flex: "0 0 180px", padding: "15px 24px" }}>
-                  <span style={{ fontSize: 15, fontWeight: 400, color: C.text }}>{offer.expiry}</span>
+                <div style={{ flex: "0 0 160px", padding: "12px 24px" }}>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{offer.expiry}</span>
                 </div>
-                <div style={{ flex: "0 0 110px", padding: "15px 24px", textAlign: "right" }}>
-                  <span style={{ fontSize: 15, fontWeight: 400, color: C.text }}>{offer.used}</span>
+                <div style={{ flex: "0 0 90px", padding: "12px 24px", textAlign: "right" }}>
+                  <span style={{ fontSize: 14, fontWeight: 400, color: C.text }}>{offer.used}</span>
                 </div>
-                <div style={{ flex: "0 0 140px", padding: "15px 24px" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", padding: "5px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
+                <div style={{ flex: "0 0 140px", padding: "12px 24px" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", padding: "4px 12px", background: s.bg, borderRadius: 99, fontSize: 13, fontWeight: 500, color: s.color }}>
                     {offer.status}
                   </span>
                 </div>
@@ -736,11 +763,17 @@ const CAMPAIGN_STATUS_STYLES: Record<string, { bg: string; color: string }> = {
   Failed:    { bg: "#FEE2E2", color: "#991B1B" },
 };
 
+const CAMPAIGN_FILTERS = ["All", "Completed", "Scheduled", "Sending", "Failed"] as const;
+
 function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
   const [query, setQuery] = useState("");
-  const filtered = CAMPAIGNS.filter(c =>
-    c.name.toLowerCase().includes(query.toLowerCase())
-  );
+  const [statusFilter, setStatusFilter] = useState<string>("All");
+
+  const filtered = CAMPAIGNS.filter(c => {
+    const matchesQuery = c.name.toLowerCase().includes(query.toLowerCase());
+    const matchesStatus = statusFilter === "All" || c.status === statusFilter;
+    return matchesQuery && matchesStatus;
+  });
 
   return (
     <div style={{ display: "flex", flexDirection: "column", padding: "32px 64px 48px", gap: 32, background: C.bg, minHeight: "100%" }}>
@@ -784,7 +817,7 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
             Campaign history
           </p>
           {/* Search */}
-          <div style={{ position: "relative", width: 300 }}>
+          <div style={{ position: "relative", width: 280 }}>
             <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
               <Search size={15} color={C.textMuted} />
             </div>
@@ -793,14 +826,36 @@ function CampaignsTab({ onNewCampaign }: { onNewCampaign: () => void }) {
               onChange={e => setQuery(e.target.value)}
               placeholder="Search campaigns…"
               style={{
-                width: "100%", height: 40, paddingLeft: 36, paddingRight: 12,
+                width: "100%", height: 38, paddingLeft: 36, paddingRight: 12,
                 border: `1px solid ${C.border}`, borderRadius: 10,
-                fontSize: 14, fontWeight: 400, color: C.text,
+                fontSize: 14, color: C.text,
                 fontFamily: "inherit", outline: "none", boxSizing: "border-box",
                 background: C.bg,
               }}
             />
           </div>
+        </div>
+
+        {/* Status filters */}
+        <div style={{ display: "flex", flexDirection: "row", gap: 6 }}>
+          {CAMPAIGN_FILTERS.map(f => {
+            const active = statusFilter === f;
+            return (
+              <button
+                key={f}
+                onClick={() => setStatusFilter(f)}
+                style={{
+                  padding: "5px 14px", borderRadius: 99, border: "none",
+                  fontSize: 13, fontWeight: active ? 600 : 400,
+                  background: active ? C.bgGreen : "#F4F4F8",
+                  color: active ? C.greenActive : C.textSecondary,
+                  cursor: "pointer", fontFamily: "inherit", transition: "all 150ms ease",
+                }}
+              >
+                {f}
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
